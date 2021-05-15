@@ -1,3 +1,10 @@
+--SQLite query for Photos.sqlite in iOS 12
+--This query was tested in DB Browser for SQLite iOS version 12.4.8
+--For details see blog post here: https://dfir.pubpub.org/pub/v19rksyf/release/1
+--By: Scott Koenig 
+--Twitter: @Scott_Kjr
+--Reminder to always test and validate!
+
 SELECT ZGENERICASSET.Z_PK AS 'GenericAsset_zpk',
   ZGENERICASSET.ZADDITIONALATTRIBUTES AS 'AddAttributes_Key',
   ZDETECTEDFACE.ZASSET AS 'DetectedFaceAsset',
