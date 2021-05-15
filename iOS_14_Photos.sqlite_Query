@@ -1,3 +1,10 @@
+--SQLite query for Photos.sqlite in iOS 14
+--This query was tested in DB Browser for SQLite iOS versions 14.0.1 and 14.4.2
+--For details see blog post here: https://dfir.pubpub.org/pub/v19rksyf/release/1
+--By: Scott Koenig 
+--Twitter: @Scott_Kjr
+--Reminder to always test and validate!
+
 SELECT ZASSET.Z_PK AS 'Asset_zpk',
   ZASSET.ZADDITIONALATTRIBUTES AS 'AddAttributes_Key',
   ZDETECTEDFACE.ZASSET AS 'DetectedFaceAsset',
