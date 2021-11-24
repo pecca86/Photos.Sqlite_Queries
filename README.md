@@ -8,10 +8,14 @@ Mac OS:
 /Users/<USER>/Pictures/PhotosLibrary.photoslibrary/database/Photos.sqlite
 
 My research started in 2020 and since that time, I have continued to research and update the queries. The initial write up was posted via Heather Mahalik’s blog at https://smarterforensics.com/. The write up was later reviewed and validated by DFRWS: https://dfir.pubpub.org/pub/v19rksyf/release/1
+  
+A follow-up blog was posted on 11/23/2021 and can be found at ############  
 
 References:
 
-https://abrignoni.blogspot.com https://github.com/abrignoni
+https://abrignoni.blogspot.com 
+
+https://github.com/abrignoni
 
 https://smarterforensics.com
 
