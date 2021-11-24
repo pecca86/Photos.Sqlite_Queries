@@ -1,0 +1,1654 @@
+--SQLite query for Photos.sqlite in iOS 15 and Monterey
+--Has everything possible that could join and includes Scene Classification. This one will have the largest result and will have largest number of blobs. 
+--By: Scott Koenig 
+--Twitter: @Scott_Kjr
+--Blog: https://theforensicscooter.com/
+--Reminder to always test and validate!
+
+SELECT
+  CASE ZASSET.ZCOMPLETE
+    WHEN 1 THEN 'Yes'
+  END AS 'Asset Complete',
+  ZASSET.Z_PK AS 'Asset zPK',
+  ZAddAssetAttr.Z_PK AS 'AddAssetAttr zPK',
+  DateTime(ZASSET.ZDATECREATED + 978307200, 'UNIXEPOCH') AS 'Date Created Asset',
+  DateTime(ZASSET.ZDATECREATED + 978307200, 'UNIXEPOCH', 'localtime') AS 'Local Date Created Asset',
+  ZAddAssetAttr.ZEXIFTIMESTAMPSTRING AS 'EXIF Timestamp String AddAssAttr',
+  DateTime(ZASSET.ZMODIFICATIONDATE + 978307200, 'UNIXEPOCH') AS 'File Modification Date Asset',
+  DateTime(CM.ZCREATIONDATE + 978307200, 'UNIXEPOCH') AS 'Creation Date Cloud Master',
+  DateTime(IR.ZCLOUDMASTERDATECREATED + 978307200, 'UNIXEPOCH') AS 'Cloud Master Date Created Internal Resource',
+  DateTime(ZASSET.ZADDEDDATE + 978307200, 'UNIXEPOCH') AS 'Add Date Asset',
+  DateTime(ZASSET.ZLASTSHAREDDATE + 978307200, 'UNIXEPOCH') AS 'Last Shared Date Asset',
+  DateTime(ZASSET.ZCLOUDBATCHPUBLISHDATE + 978307200, 'UNIXEPOCH') AS 'Cloud Batch Publish Date Asset',
+  DateTime(ZASSET.ZCLOUDSERVERPUBLISHDATE + 978307200, 'UNIXEPOCH') AS 'Cloud Server Publish Date Asset',
+  DateTime(CLDRes.ZDATECREATED + 978307200, 'UNIXEPOCH') AS 'Date Created CLDRes',
+  DateTime(ZAddAssetAttr.ZLASTUPLOADATTEMPTDATE + 978307200, 'UNIXEPOCH') AS 'Last Upload Attempt Date AddAssetAttr',
+  DateTime(CM.ZIMPORTDATE + 978307200, 'UNIXEPOCH') AS 'Import Date Cloud Master',
+  ZASSET.ZIMPORTSESSION AS 'Import Session Key Asset',
+  DateTime(ZAddAssetAttr.ZALTERNATEIMPORTIMAGEDATE + 978307200, 'UNIXEPOCH') AS 'Alternate Import Image Date AddAssetAttr',
+  DateTime(CLDRes.ZLASTPREFETCHDATE + 978307200, 'UNIXEPOCH') AS 'Last Prefetch Date CLDRes',
+  IR.ZCLOUDPREFETCHCOUNT AS 'Cloud Prefetch Count Internal Resource',
+  CASE IR.ZCLOUDLASTPREFETCHDATE
+    WHEN 0 THEN 'NA'
+	ELSE DateTime(IR.ZCLOUDLASTPREFETCHDATE + 978307200, 'UNIXEPOCH')
+  END AS 'Cloud Last Prefetch Date Internal Resource', 
+  ZAddAssetAttr.ZTIMEZONENAME AS 'Time Zone Name AddAssetAttr',
+  ZAddAssetAttr.ZTIMEZONEOFFSET AS 'Time Zone Offset AddAssetAttr',
+  ZAddAssetAttr.ZINFERREDTIMEZONEOFFSET AS 'Inferred Time Zone Offset AddAssetAttr',
+  ZAddAssetAttr.ZIMPORTEDBYBUNDLEIDENTIFIER AS 'Imported By Bundle Identifier ZAddAssetAttr',
+  ZAddAssetAttr.ZIMPORTEDBYDISPLAYNAME AS 'Imported By Display Name AddAssetAttr',
+  CM.ZIMPORTEDBYDISPLAYNAME AS 'Imported by Display Name Cloud Master',
+  CM.ZIMPORTEDBYBUNDLEIDENTIFIER AS 'Imported by Bundle ID Cloud Master',
+  ZAddAssetAttr.ZEDITORBUNDLEID AS 'Editor Bundle ID AddAssetAttr',
+  CASE ZASSET.ZBUNDLESCOPE
+    WHEN 0 THEN '0-Unknown'
+	WHEN 1 THEN '1-Unknown'
+	WHEN 2 THEN '2-Photo Cloud Sharing Data'
+	WHEN 3 THEN '3-Unknown'
+	WHEN 4 THEN '4-Unknown'
+    ELSE ZASSET.ZBUNDLESCOPE
+  END AS 'Bundle Scope Asset',
+  ZASSET.ZIMAGEREQUESTHINTS AS 'HEX Image Request Hints Asset',
+  IR.ZDATASTOREKEYDATA AS 'HEX Data Store Key Data Internal Resource',
+  CLDRes.ZFILEPATH AS 'File Path CLDRes',
+  CASE ZASSET.ZSAVEDASSETTYPE
+    WHEN 0 THEN 'Saved via other source'
+    WHEN 1 THEN '1-Unknown'
+    WHEN 2 THEN '2-Unknown'
+    WHEN 3 THEN 'DCIM APPLE'
+    WHEN 4 THEN 'Photo Cloud Sharing Data'
+    WHEN 5 THEN '5-Unknown'
+    WHEN 6 THEN 'Cloud Photo Library Asset'
+    WHEN 7 THEN '7-Unknown'
+    WHEN 8 THEN 'Cloud Master Moment Asset'
+    ELSE ZASSET.ZSAVEDASSETTYPE
+  END AS 'Saved Asset Type',
+  ZASSET.ZDIRECTORY AS 'Directory Asset',
+  ZASSET.ZFILENAME AS 'Filename Asset',
+  ZAddAssetAttr.ZORIGINALFILENAME AS 'Org Filename AddAssetAttr',
+  CM.ZORIGINALFILENAME AS 'Org File Name Cloud Master',
+  CASE ZAddAssetAttr.ZDESTINATIONASSETCOPYSTATE
+    WHEN 0 THEN 'No Copy'
+    WHEN 2 THEN 'Has A Copy'
+  ELSE ZAddAssetAttr.ZDESTINATIONASSETCOPYSTATE
+  END AS 'Destination Asset Copy State AddAssetAttr',
+  CASE IR.ZDATASTORESUBTYPE 
+    WHEN 0 THEN '0-Unknown'
+    WHEN 1 THEN '1-Main Asset'
+    WHEN 2 THEN '2-Photo with Adjustments'
+    WHEN 3 THEN '3-Photo Cloud Sharing Data'
+    WHEN 4 THEN '4-Has Uploaded to Cloud'
+    WHEN 5 THEN '5-Has Uploaded to Cloud'
+    WHEN 6 THEN '6-Unknown'
+    WHEN 7 THEN '7-MP4-Unknown'
+    WHEN 8 THEN '8-MP4-Unknown'
+	WHEN 9 THEN '9-Unknown'
+	WHEN 10 THEN '10-Unknown'
+    WHEN 13 THEN '13-Unknown'
+	WHEN 14 THEN '14-Unknown'
+	WHEN 15 THEN '15-Has Markup and Adjustments'
+	WHEN 16 THEN '16-Unknown'
+	WHEN 17 THEN '17-Unknown'
+    WHEN 18 THEN '18-Live Photo Video'
+    WHEN 19 THEN '19-Live Photo with Adjustments'
+	WHEN 22 THEN '22-Setting was Changed Prior to Capture'
+    WHEN 26 THEN '26-Unknown'
+    ELSE IR.ZDATASTORESUBTYPE
+  END AS 'Data Store Sub Type Internal Resource',
+  CASE IR.ZFILEID 
+    WHEN -1 THEN 'Not Valid'
+    ELSE IR.ZFILEID
+  END AS 'File ID Key Internal Resource',
+  IR.ZRECIPEID AS 'Recipe ID Key Internal Resource',
+  CASE IR.ZVERSION
+    WHEN 0 THEN '0-No Adjustments'
+	WHEN 1 THEN '1-Unknown'
+    WHEN 2 THEN '2-Adjustments'
+    WHEN 3 THEN '3-Unknown'
+    ELSE IR.ZVERSION
+  END AS 'Version Internal Resource',
+  ZASSET.ZORIGINALCOLORSPACE AS 'Original Color Space Asset',
+  ZASSET.ZUNIFORMTYPEIDENTIFIER AS 'Uniform Type ID Asset',
+  MedAnalyAsset.ZCOLORNORMALIZATIONDATA AS 'HEX Color Normalization Data MedAnalyAsset',
+  CM.ZUNIFORMTYPEIDENTIFIER AS 'Uniform Type ID Cloud Master',
+  CLDRes.ZUNIFORMTYPEIDENTIFIER AS 'Uniform Type Identifier CLDRes', 
+  CM.ZMEDIAMETADATATYPE AS 'Media Metadata Type Cloud Master',
+  ZAddAssetAttr.ZMEDIAMETADATATYPE AS 'Media Metadata Type AddAssetAttr',
+  CASE ZASSET.ZCLOUDLOCALSTATE
+    WHEN 0 THEN 'Not Synced / is in Cloud Share Album' 
+    WHEN 1 THEN 'Synced with Cloud'
+    ELSE ZASSET.ZCLOUDLOCALSTATE
+  END AS 'Cloud Local State File Synced with Cloud Asset',
+  CASE CM.ZCLOUDLOCALSTATE
+    WHEN 0 THEN 'Not Synced with Cloud'
+    WHEN 3 THEN 'Synced with Cloud'
+    ELSE CM.ZCLOUDLOCALSTATE
+  END AS 'Cloud Master Cloud Local State',
+  Case ZAddAssetAttr.ZDATECREATEDSOURCE
+    WHEN 0 THEN '0-Unknown'
+	WHEN 1 THEN '1-Unknown'
+	ELSE ZAddAssetAttr.ZDATECREATEDSOURCE
+  END AS 'Date Created Source ZAddAssetAttr',  
+  CASE PER.ZCLOUDLOCALSTATE
+    WHEN 0 THEN 'Not Synced with Cloud' 
+    WHEN 1 THEN 'Synced with Cloud'
+    ELSE PER.ZCLOUDLOCALSTATE
+  END AS 'Person Cloud Local State',
+  CASE DF.ZCLOUDLOCALSTATE
+    WHEN 0 THEN 'Not Synced with Cloud' 
+    WHEN 1 THEN 'Synced with Cloud'
+    ELSE DF.ZCLOUDLOCALSTATE
+  END AS 'Detected Face Cloud Local State DF',
+  CASE FC.ZCLOUDLOCALSTATE 
+    WHEN 0 THEN 'Not Synced with Cloud' 
+    WHEN 1 THEN 'Synced with Cloud'
+    ELSE FC.ZCLOUDLOCALSTATE
+  END AS 'Face Crop Cloud Local State FC',
+  CASE MEM.ZCLOUDLOCALSTATE
+    WHEN 0 THEN '0-Not Synced with Cloud' 
+    WHEN 1 THEN '1-Synced with Cloud'
+    ELSE MEM.ZCLOUDLOCALSTATE
+  END AS 'Memory Cloud Local State Memory',
+  CASE SUGG.ZCLOUDLOCALSTATE
+    WHEN 0 THEN '0-Not Synced with Cloud'
+    WHEN 1 THEN '1-Synced with Cloud'
+    ELSE SUGG.ZCLOUDLOCALSTATE
+  END AS 'Suggestion Cloud Local State SUGG',
+  CASE IR.ZCLOUDLOCALSTATE
+    WHEN 0 THEN 'Not Synced / is in Cloud Share Album'
+    WHEN 3 THEN 'Synced with Cloud'
+    ELSE IR.ZCLOUDLOCALSTATE
+  END AS 'Internal Resource Cloud Local State IR',
+  CASE SUGG.ZSTATE
+    WHEN 0 THEN '0-Unknown'
+    WHEN 1 THEN '1-Unknown'
+    ELSE SUGG.ZSTATE
+  END AS 'Suggestion State',  
+  CASE PER.ZCLOUDVERIFIEDTYPE
+    WHEN 0 THEN '0-Unknown' 
+    WHEN 1 THEN '1-Unknown'
+    WHEN 2 THEN '2-Unknown'
+    ELSE PER.ZCLOUDVERIFIEDTYPE
+  END AS 'Cloud Verified Type Person',
+  CASE CM.ZMOMENTSHARE
+    WHEN 1 THEN 'Yes Cloud Master Moment Shared'
+	WHEN 2 THEN 'Not Currently Synced Cloud Master Moment Shared'
+    ELSE CM.ZMOMENTSHARE
+  END AS 'Moment Share Cloud Master',
+  CASE ZASSET.ZVISIBILITYSTATE
+    WHEN 0 THEN 'Not in Cloud Shared Album'
+    WHEN 2 THEN 'In Cloud Shared Album'
+    ELSE ZASSET.ZVISIBILITYSTATE
+  END AS 'Visibility State Asset',
+  CASE DF.ZASSETVISIBLE
+    WHEN 0 THEN '0-No'
+    WHEN 1 THEN '1-Yes'  
+    ELSE DF.ZASSETVISIBLE
+  END AS 'Asset Visible DF',
+  CASE ZASSET.ZCLOUDISMYASSET
+    WHEN 1 THEN 'Yes File is My Asset'
+    WHEN 0 THEN 'No File is not My Asset'
+    ELSE 'NA'
+  END AS 'File in Shared Album My Asset',
+  CASE ZAddAssetAttr.ZSHARETYPE
+    WHEN 0 THEN 'Not Cloud Master Moment Share'
+    WHEN 1 THEN 'Is Cloud Master Moment Share'
+    ELSE ZAddAssetAttr.ZSHARETYPE
+  END AS 'Share Type CMM AddAssetAttr',
+  CASE IR.ZCLOUDSOURCETYPE
+    WHEN 0 THEN '0-Unknown'
+    ELSE IR.ZCLOUDSOURCETYPE
+  END AS 'Cloud Source Type Internal Resource',
+  CASE IR.ZLOCALAVAILABILITY
+    WHEN -1 THEN 'NA / Unknown'
+    WHEN 1 THEN 'Yes'
+    ELSE IR.ZLOCALAVAILABILITY
+  END AS 'Local Avilability Internal Resource',
+  CASE IR.ZREMOTEAVAILABILITY
+    WHEN 0 THEN 'No'
+    WHEN 1 THEN 'Yes - Available in Cloud Storage'
+    ELSE IR.ZREMOTEAVAILABILITY
+  END AS 'Remot Avilability Internal Resource',
+  IR.ZREMOTEAVAILABILITYTARGET AS 'Remot Avilability Target Internal Resource',
+  IR.ZSIDECARINDEX AS 'Side Car Index Key Internal Resource',
+  CASE ZASSET.ZKIND
+    WHEN 0 THEN 'Photo'
+    WHEN 1 THEN 'Video'
+  END AS 'Kind of Media Asset',
+  CASE CM.ZFULLSIZEJPEGSOURCE
+    WHEN 0 THEN 'No is a Video'
+    WHEN 1 THEN 'Yes'
+	ELSE CM.ZFULLSIZEJPEGSOURCE
+  END AS 'Full Size Jpeg is Source Cloud Master',
+  CM.ZCODECNAME AS 'Codec Name Cloud Master',
+  IR.ZCODECFOURCHARCODENAME AS 'Codec Four Char Code Name IR',
+  ExtAttr.ZCODEC AS 'Codec ExtAttr',
+  CASE ZASSET.ZKINDSUBTYPE 
+    WHEN 0 THEN 'Still Photo'
+    WHEN 2 THEN 'Live Photo'
+    WHEN 10 THEN 'SpringBoard Screenshot'
+    WHEN 100 THEN 'Video'
+    WHEN 101 THEN 'Slow-Mo Video'
+    WHEN 102 THEN 'Time-lapse Video'
+    ELSE ZASSET.ZKINDSUBTYPE
+  END AS 'Kind Sub Type Asset',
+  CASE IR.ZRESOURCETYPE
+    WHEN 0 THEN '0-Photo'
+    WHEN 1 THEN '1-Video'
+    WHEN 3 THEN '3-Live Photo,'
+	WHEN 5 THEN '5-Setting was Changed Prior to Capture'
+    WHEN 6 THEN '6-Screenshot,'
+	WHEN 9 THEN '9-Unknown'
+    WHEN 13 THEN '13-Unknown'
+    ELSE IR.ZRESOURCETYPE
+  END AS 'Resource Type Internal Resource',
+  CASE ZASSET.ZPLAYBACKSTYLE
+    WHEN 1 THEN 'Still Photo'
+    WHEN 3 THEN 'Live Photo'
+    WHEN 4 THEN 'Video'
+    ELSE ZASSET.ZPLAYBACKSTYLE
+  END AS 'Playback Style Asset',
+  CASE ZAddAssetAttr.ZCLOUDKINDSUBTYPE
+    WHEN 0 THEN 'Still Photo'
+    WHEN 2 THEN 'Live Photo'
+    WHEN 3 THEN 'Screenshot'
+    WHEN 100 THEN 'Video'
+    WHEN 101 THEN 'Time-lapse'
+    ELSE ZAddAssetAttr.ZCLOUDKINDSUBTYPE
+  END AS 'Cloud Kind Sub Type AddAssetAttr',
+  ZASSET.ZVIDEOCPDURATIONVALUE AS 'Live Photo Duration Asset',
+  ZASSET.ZDURATION AS 'Video Duration Asset',
+  ZASSET.ZPLAYBACKVARIATION AS 'Playback Variation Asset',
+  CM.ZVIDEOFRAMERATE AS 'Video Frame Rate Cloud Master',
+  ZAddAssetAttr.ZPENDINGVIEWCOUNT AS 'Pending View Count AddAssetAttr',
+  ZAddAssetAttr.ZVIEWCOUNT AS 'View Count AddAssetAttr',
+  ZAddAssetAttr.ZPENDINGPLAYCOUNT AS 'Pending Play Count AddAssetAttr',
+  ZAddAssetAttr.ZPLAYCOUNT AS 'Play Count AddAssetAttr',
+  ZAddAssetAttr.ZPENDINGSHARECOUNT AS 'Pending Share Count AddAssetAttr',
+  ZAddAssetAttr.ZSHARECOUNT AS 'Share Count AddAssetAttr',
+  ZAddAssetAttr.ZCLOUDSTATERECOVERYATTEMPTSCOUNT AS 'Cloud State Recovery Attempts Count',
+  ZASSET.ZCLOUDDOWNLOADREQUESTS AS 'Cloud Download Requests Asset',
+  DateTime(IR.ZCLOUDLASTONDEMANDDOWNLOADDATE + 978307200, 'UNIXEPOCH') AS 'Cloud Last OnDemand Download Date Internal Resource',
+  DateTime(CLDRes.ZLASTONDEMANDDOWNLOADDATE + 978307200, 'UNIXEPOCH') AS 'Last OnDemand Download Date CLDRes',
+  ZAddAssetAttr.ZUPLOADATTEMPTS AS 'Upload Attempts AddAssetAttr',
+  CASE ZASSET.ZHASADJUSTMENTS
+    WHEN 0 THEN 'No'
+    WHEN 1 THEN 'Yes'
+  END AS 'Has Adjustments Asset',
+  DateTime(ZASSET.ZADJUSTMENTTIMESTAMP + 978307200, 'UNIXEPOCH') AS 'Adjustment Date Asset',
+  DateTime(UA.ZADJUSTMENTTIMESTAMP + 978307200, 'UNIXEPOCH') AS 'Adjustment Timestamp UA',
+  UA.ZADJUSTMENTFORMATIDENTIFIER AS 'Adjustment Format ID UA',
+  UA.ZADJUSTMENTFORMATVERSION AS 'Adjustment Format Version UA', 
+  UA.ZEDITORLOCALIZEDNAME AS 'Editor Localized Name UA',
+  UA.ZADJUSTMENTBASEIMAGEFORMAT AS 'Adjustment Base Image Format UA',
+  UA.ZADJUSTMENTRENDERTYPES AS 'Adjustment Render Types UA',
+  ExtAttr.ZCAMERAMAKE AS 'Camera Make ExtAttr',
+  ExtAttr.ZCAMERAMODEL AS 'Camera Model ExtAttr',
+  ExtAttr.ZLENSMODEL AS 'Lens Model ExtAttr',
+  CASE ZASSET.ZDERIVEDCAMERACAPTUREDEVICE
+    WHEN 0 THEN 'Captured with Back Camera, Screenshot, Cloud, downloaded, Other'
+    WHEN 1 THEN 'Captured with Front Camera'
+    ELSE ZASSET.ZDERIVEDCAMERACAPTUREDEVICE
+  END AS 'Derived Camera Capture Device Asset',
+  CASE ZAddAssetAttr.ZCAMERACAPTUREDEVICE 
+    WHEN 0 THEN 'Captured with Back Camera, Screenshot, Cloud, downloaded, Other'
+    WHEN 1 THEN 'Captured with Front Camera'
+    ELSE ZAddAssetAttr.ZCAMERACAPTUREDEVICE
+  END AS 'Camera Capture Device AddAssetAttr',
+  CASE ZAddAssetAttr.ZIMPORTEDBY
+    WHEN 0 THEN 'Cloud / Other'
+    WHEN 1 THEN 'Native Back Camera'
+    WHEN 2 THEN 'Native Front Camera'
+    WHEN 3 THEN 'Third Party App - Facebook, WhatsApp, Snapchat, Twitter, Screenshot made, Other'
+    WHEN 4 THEN '4-Unknown'
+    WHEN 5 THEN '5-Unknown'
+    WHEN 6 THEN 'Third Party App - Facebook, Facebook-Mess, Reddit, Whisper, Other'
+    WHEN 7 THEN '7-Unknown'
+    WHEN 8 THEN 'Native App - SpringBoard, MessageCamera, Sharingd, Other'
+    WHEN 9 THEN 'Native App - MobileSMS, Safari, Other'
+    ELSE ZAddAssetAttr.ZIMPORTEDBY
+  END AS 'Imported By AddAssetAttr',
+  CASE CM.ZIMPORTEDBY
+    WHEN 0 THEN 'Cloud / Other'
+    WHEN 1 THEN 'Native Back Camera'
+    WHEN 2 THEN 'Native Front Camera'
+    WHEN 3 THEN 'Third Party App - Facebook, WhatsApp, Snapchat, Twitter, Screenshot made, Other'
+    WHEN 4 THEN '4-Unknown'
+    WHEN 5 THEN '5-Unknown'
+    WHEN 6 THEN 'Third Party App - Facebook, Facebook-Mess, Reddit, Whisper, Other'
+    WHEN 7 THEN '7-Unknown'
+    WHEN 8 THEN 'Native App - SpringBoard, MessageCamera, Sharingd, Other'
+    WHEN 9 THEN 'Native App - MobileSMS, Safari, Other'
+    ELSE CM.ZIMPORTEDBY
+  END AS 'Imported by Cloud Master',
+  CMMD.ZDATA AS 'HEX Data Cloud Master MetaData',
+  CASE ExtAttr.ZFLASHFIRED
+    WHEN 0 THEN 'No'
+	WHEN 1 THEN 'Yes'
+	ELSE ExtAttr.ZFLASHFIRED
+  END AS 'Flash Fired ExtAttr',
+  CASE ZAddAssetAttr.ZORIGINALORIENTATION
+    WHEN 1 THEN 'Horizontal Camera (left) / Default for All Videos / Adjusted Photos'
+    WHEN 2 THEN 'Horizontal Camera (right)'
+    WHEN 3 THEN 'Horizontal Camera (right)'
+    WHEN 4 THEN 'Horizontal Camera (left)'
+    WHEN 5 THEN 'Vertical Camera (top)'
+    WHEN 6 THEN 'Vertical Camera (top)'
+    WHEN 7 Then 'Vertical Camera (bottom)'
+    WHEN 8 THEN 'Vertical Camera (bottom)'
+    ELSE ZASSET.ZORIENTATION
+  END AS 'Orginal File Orientation Additonal Asset Attributes',
+  CASE ZASSET.ZORIENTATION
+    WHEN 1 THEN 'Horizontal Camera (left) / Default for All Videos / Adjusted Photos'
+    WHEN 2 THEN 'Horizontal Camera (right)'
+    WHEN 3 THEN 'Horizontal Camera (right)'
+    WHEN 4 THEN 'Horizontal Camera (left)'
+    WHEN 5 THEN 'Vertical Camera (top)'
+    WHEN 6 THEN 'Vertical Camera (top)'
+    WHEN 7 Then 'Vertical Camera (bottom)'
+    WHEN 8 THEN 'Vertical Camera (bottom)'
+    ELSE ZASSET.ZORIENTATION
+  END AS 'File Orientation Asset',
+  CASE CM.ZORIGINALORIENTATION
+    WHEN 1 THEN 'Horizontal Camera (left) / Default for All Videos . Adjusted Photos'
+    WHEN 2 THEN 'Horizontal Camera (right)'
+    WHEN 3 THEN 'Horizontal Camera (right)'
+    WHEN 4 THEN 'Horizontal Camera (left)'
+    WHEN 5 THEN 'Vertical Camera (top)'
+    WHEN 6 THEN 'Vertical Camera (top)'
+    WHEN 7 Then 'Vertical Camera (bottom)'
+    WHEN 8 THEN 'Vertical Camera (bottom)'
+    ELSE CM.ZORIGINALORIENTATION
+  END AS 'Original Orientation Cloud Master',
+  CASE IR.ZORIENTATION
+    WHEN 0 THEN 'Unknown'
+    WHEN 1 THEN 'Horizontal Camera (left) / Default for All Videos / Adjusted Photos'
+    WHEN 2 THEN 'Horizontal Camera (right)'
+    WHEN 3 THEN 'Horizontal Camera (right)'
+    WHEN 4 THEN 'Horizontal Camera (left)'
+    WHEN 5 THEN 'Vertical Camera (top)'
+    WHEN 6 THEN 'Vertical Camera (top)'
+    WHEN 7 Then 'Vertical Camera (bottom)'
+    WHEN 8 THEN 'Vertical Camera (bottom)'
+    ELSE IR.ZORIENTATION
+  END AS 'Orientation Internal Resource',
+  CASE ZASSET.ZSYNDICATIONSTATE
+    WHEN 0 THEN '0-Unknown'
+	WHEN 1 THEN '1-Unknown'
+	WHEN 2 THEN '2-Unknown'
+	WHEN 3 THEN '3-Unknown'
+	WHEN 4 THEN '4-Unknown'
+	WHEN 5 THEN '5-Unknown'
+	ELSE ZASSET.ZSYNDICATIONSTATE
+  END AS 'Syndication State Asset',
+  MEM.ZSYNDICATEDCONTENTSTATE AS 'Syndicated Content State MEM',
+  MedAnalyAsset.ZCHARACTERRECOGNITIONATTRIBUTES AS 'Charter Recognitation Attributes Key MedAnalyAsset',
+  CRA.ZCHARACTERRECOGNITIONDATA AS 'HEX CRA Character Recognitation Data CRA',
+  CRA.ZMACHINEREADABLECODEDATA AS 'CRA Machine Readable Code Data',
+  MedAnalyAsset.ZVISUALSEARCHATTRIBUTES AS 'Visual Search Attributes MedAnalyAsset',  
+  CASE ZASSET.ZISMAGICCARPET
+    WHEN 0 THEN '0-Unknown'
+    WHEN 1 THEN '1-Unknown'
+	ELSE ZASSET.ZISMAGICCARPET
+  END AS 'Is Magic Carpet Asset',
+  CASE ZASSET.ZFAVORITE
+    WHEN 0 THEN 'No'
+    WHEN 1 THEN 'Yes'
+  END AS 'Asset is Favorite Asset',
+  CASE MEM.ZFAVORITE
+    WHEN 0 THEN 'No'
+    WHEN 1 THEN 'Yes'
+  END AS 'Memory is Favorite Memory',
+   CASE ZASSET.ZHIDDEN
+    WHEN 0 THEN 'Not Hidden'
+    WHEN 1 THEN 'Hidden'
+    ELSE ZASSET.ZHIDDEN
+  END AS 'Asset is Hidden File Asset',
+  CASE DF.ZHIDDEN
+    WHEN 0 THEN 'Not Hidden'
+    WHEN 1 THEN 'Hidden'
+    ELSE DF.ZHIDDEN
+  END AS 'Detected Face Hidden File Detected Face',
+  CASE ZASSET.ZTRASHEDSTATE
+    WHEN 1 THEN 'In Trash'
+    WHEN 0 THEN 'Not In Trash'
+    ELSE ZASSET.ZTRASHEDSTATE
+  END AS 'Asset on Devcie is in Trash',
+  DateTime(ZASSET.ZTRASHEDDATE + 978307200, 'UNIXEPOCH') AS 'Trashed Date Asset',
+  CASE DF.ZISINTRASH
+    WHEN 1 THEN 'In Trash'
+    WHEN 0 THEN 'Not In Trash'
+    ELSE DF.ZISINTRASH
+  END AS 'Detected Face is in Trash',
+  CASE IR.ZTRASHEDSTATE
+    WHEN 1 THEN 'In Trash'
+    WHEN 0 THEN 'Not In Trash'
+    ELSE IR.ZTRASHEDSTATE
+  END AS 'Trash State Internal Resource',
+  DateTime(IR.ZTRASHEDDATE + 978307200, 'UNIXEPOCH') AS 'Trashed Date Internal Resource',
+  Case ZASSET.ZCLOUDDELETESTATE
+    WHEN 0 THEN 'Not Deleted'
+    WHEN 1 THEN 'Deleted'
+    ELSE ZASSET.ZCLOUDDELETESTATE
+  END AS 'Asset Cloud Delete State Asset',
+  Case PER.ZCLOUDDELETESTATE
+    WHEN 0 THEN 'Not Deleted'
+    WHEN 1 THEN 'Deleted'
+    ELSE PER.ZCLOUDDELETESTATE
+  END AS 'Person Cloud Delete State Person',
+    Case IR.ZCLOUDDELETESTATE
+    WHEN 0 THEN 'Not Deleted'
+    WHEN 1 THEN 'Deleted'
+    ELSE IR.ZCLOUDDELETESTATE
+  END AS 'Cloud Delete State Internal Resource',
+  CASE FC.ZCLOUDDELETESTATE
+    WHEN 0 THEN 'Not Deleted'
+    WHEN 1 THEN 'Deleted'
+    ELSE FC.ZCLOUDDELETESTATE
+  END AS 'Cloud Delete State FC',
+   CASE SUGG.ZCLOUDDELETESTATE
+    WHEN 0 THEN '0-Not Deleted'
+    WHEN 1 THEN '1-Deleted'
+    ELSE SUGG.ZCLOUDDELETESTATE
+  END AS 'Suggestion Cloud Delete State SUGG',
+  CASE ZASSET.ZCLOUDISDELETABLE
+    WHEN 0 THEN 'No'
+    WHEN 1 THEN 'Yes'
+    ELSE ZASSET.ZCLOUDISDELETABLE
+  END AS 'Cloud File is Deletable Asset',
+  CASE ZASSET.ZCLOUDISDELETABLE
+    WHEN 1 THEN 'Yes'
+    WHEN 0 THEN 'No'
+    ELSE ZASSET.ZCLOUDISDELETABLE
+  END AS 'Cloud is Deletable Asset',
+  Case MEM.ZCLOUDDELETESTATE
+    WHEN 0 THEN '0-Not Deleted'
+    WHEN 1 THEN '1-Deleted'
+    ELSE MEM.ZCLOUDDELETESTATE
+  END AS 'Cloud Delete State Memory',
+  CASE ZAddAssetAttr.ZPTPTRASHEDSTATE
+    WHEN 0 THEN '0-Unknown'
+    WHEN 1 THEN '1-Unknown'
+    ELSE ZAddAssetAttr.ZPTPTRASHEDSTATE
+  END AS 'PTP Trashed State AddAssetAttr',
+  CASE IR.ZPTPTRASHEDSTATE
+    WHEN 0 THEN '0-Unknown'
+    WHEN 1 THEN '1-Unknown'
+    ELSE IR.ZPTPTRASHEDSTATE
+  END AS 'PTP Trashed State Internal Resource',
+  DateTime(ZASSET.ZCLOUDLASTVIEWEDCOMMENTDATE + 978307200, 'UNIXEPOCH') AS 'Cloud Last Viewed Comment Date Asset',
+  Case ZASSET.ZCLOUDHASCOMMENTSBYME
+    WHEN 1 THEN 'Yes Comments made'
+    ELSE ZASSET.ZCLOUDHASCOMMENTSBYME
+  END AS 'Cloud Comments by Me Asset',
+  ZASSET.ZCONVERSATION AS 'Conversation Asset',
+  CASE ZASSET.ZCLOUDHASCOMMENTSCONVERSATION
+    WHEN 1 THEN 'Yes Comments Conversation'
+    ELSE ZASSET.ZCLOUDHASCOMMENTSCONVERSATION
+  END AS 'Cloud Comments Conversation Asset',
+  CASE CSC.ZISBATCHCOMMENT
+    WHEN 1 THEN 'Yes'
+    WHEN 0 THEN 'No'
+    ELSE CSC.ZISBATCHCOMMENT
+  END AS 'Cloud Shared Comment Is Batch Comment',
+  CASE CSC.ZISCAPTION
+    WHEN 1 THEN 'Yes'
+    WHEN 0 THEN  'No'
+    ELSE CSC.ZISCAPTION
+  END AS 'Cloud Shared Comment Is Caption', 
+  CASE CSC.ZISDELETABLE
+    WHEN 1 THEN 'Yes'
+    WHEN 0 THEN 'No'
+    ELSE CSC.ZISDELETABLE
+  END AS 'Cloud Shared Comment Is Deletable',
+  CASE CSC.ZISLIKE
+    WHEN 1 THEN 'Yes'
+    WHEN 0 THEN 'No'
+    ELSE CSC.ZISLIKE
+  END AS 'Cloud Shared Comment Is Liked',
+  CASE CSC.ZISMYCOMMENT
+    WHEN 1 THEN 'Yes'
+    WHEN 0 THEN 'No'
+    ELSE CSC.ZISMYCOMMENT
+  END AS 'Cloud Shared Comment Is My Comment',
+  DateTime(CSC.ZCOMMENTCLIENTDATE + 978307200, 'UNIXEPOCH') AS 'Comment Client Date Cloud Shared Comment',
+  DateTime(CSC.ZCOMMENTDATE + 978307200, 'UNIXEPOCH') AS 'Comment Date Cloud Shared Comment',
+  CSC.ZCOMMENTTEXT AS 'Comment Text Cloud Shared Comment',
+  CSC.ZCOMMENTTYPE AS 'Comment Type Cloud Shared Comment',
+  CSC.ZCOMMENTERHASHEDPERSONID AS 'Commenter Hashed Person ID Cloud Shared Comment',
+  ZAddAssetAttr.ZTITLE AS 'Title - Comments via Web Cloud - AddAssetAttr',
+  ZAddAssetAttr.ZACCESSIBILITYDESCRIPTION AS 'Accessibility Description AddAssetAttr',
+  AssetDes.ZLONGDESCRIPTION AS 'Long Description Asset Description',
+  CASE ZASSET.ZCLOUDHASUNSEENCOMMENTS
+    WHEN 0 THEN 'No Unseen Comments'
+    WHEN 1 THEN 'Yes has Unseen Comments'
+    ELSE ZASSET.ZCLOUDHASUNSEENCOMMENTS
+  END AS 'Cloud Has Unseen Comments Asset',
+  CASE ZAddAssetAttr.ZALLOWEDFORANALYSIS
+    WHEN 0 THEN 'No'
+    WHEN 1 THEN 'Yes'
+    ELSE ZAddAssetAttr.ZALLOWEDFORANALYSIS
+  END AS 'Allowed for Analysis AddAssetAttr',
+  CASE ZAddAssetAttr.ZSCENEANALYSISISFROMPREVIEW
+    WHEN 0 THEN '0-No'
+    WHEN 1 THEN '1-Yes'
+    ELSE ZAddAssetAttr.ZSCENEANALYSISISFROMPREVIEW
+  END AS 'Scene Analysis From Preview ZAddAssetAttr',
+  DateTime(ZAddAssetAttr.ZSCENEANALYSISTIMESTAMP + 978307200, 'UNIXEPOCH') AS 'Scene Analysis Date AddAssetAttr',
+  DateTime(ZASSET.ZANALYSISSTATEMODIFICATIONDATE + 978307200, 'UNIXEPOCH') AS 'Analysis State Mod. Date Asset',
+  DateTime(MedAnalyAsset.ZMEDIAANALYSISTIMESTAMP + 978307200, 'UNIXEPOCH') AS 'Media Analysis Timestamp MedAnalyAsset',
+  SceneP.ZDATA AS 'HEX NSKeyed Plist Scene Print Data SceneP',
+  ZASSET.ZDEFERREDPROCESSINGNEEDED AS 'Deferred Processing Needed Asset',
+  CASE ZASSET.ZVIDEODEFERREDPROCESSINGNEEDED
+    WHEN 0 THEN '0-No'
+	WHEN 1 THEN '1-Yes'
+	ELSE ZASSET.ZVIDEODEFERREDPROCESSINGNEEDED
+  END AS 'Video Deferred Processing Needed Asset',
+  CASE ZASSET.ZLATITUDE
+    WHEN -180.0 THEN '0'
+    ELSE ZASSET.ZLATITUDE
+  END AS 'Latitude Asset',
+  ExtAttr.ZLATITUDE AS 'Latitude ExtAttr',
+  CASE ZASSET.ZLONGITUDE
+    WHEN -180.0 THEN '0'
+    ELSE ZASSET.ZLONGITUDE
+  END AS 'Longitude Asset',
+  ExtAttr.ZLONGITUDE AS 'Longitude ExtAttr',
+  CASE ZAddAssetAttr.ZGPSHORIZONTALACCURACY
+    WHEN -1.0 THEN 'Not Valid'
+    ELSE ZAddAssetAttr.ZGPSHORIZONTALACCURACY
+  END AS 'Horizontal Accuracy AddAssetAttr',
+  CASE ZAddAssetAttr.ZREVERSELOCATIONDATAISVALID
+    WHEN 0 THEN 'No'
+    WHEN 1 THEN 'Yes'
+  END AS 'Is Reverse Location Data Valid AddAssetAttr',
+  ZAddAssetAttr.ZREVERSELOCATIONDATA AS 'HEX NSKeyed Plist Org File Reverse Location Data AddAssetAttr',
+  ZASSET.ZLOCATIONDATA AS 'HEX Location Data Asset',
+  CASE ZAddAssetAttr.ZSHIFTEDLOCATIONISVALID
+    WHEN 0 THEN 'No'
+    WHEN 1 THEN 'Yes'
+  END AS 'Is Shifted Location Valid AddAssetAttr',
+  ZAddAssetAttr.ZSHIFTEDLOCATIONDATA AS 'Shifted Location Data AddAssetAttr',
+  ZAddAssetAttr.ZLOCATIONHASH AS 'Location Hash AddAssetAttr',
+  DateTime(GenAlbum.ZCREATIONDATE + 978307200, 'UNIXEPOCH') AS 'GenAlbum Creation Date GenAlbum',
+  DateTime(GenAlbum.ZSTARTDATE + 978307200, 'UNIXEPOCH') AS 'GenAlbum Start Date GenAlbum',
+  DateTime(GenAlbum.ZENDDATE + 978307200, 'UNIXEPOCH') AS 'GenAlbum End Date GenAlbum',
+  DateTime(GenAlbum.ZTRASHEDDATE + 978307200, 'UNIXEPOCH') AS 'GenAlbum Trash Date GenAlbum',
+  CASE GenAlbum.ZCLOUDLOCALSTATE 
+    WHEN 0 THEN '0-In Cloud Share Album' 
+    WHEN 1 THEN '1-In Local Album'
+    ELSE GenAlbum.ZCLOUDLOCALSTATE
+  END AS 'Cloud Local State GenAlbum',
+  GenAlbum.ZSYNDICATE AS 'Syndicate GenAlbum',
+  DateTime(GenAlbum.ZCLOUDCREATIONDATE + 978307200, 'UNIXEPOCH') AS 'GenAlbum Cloud Creation Date GenAlbum',
+  DateTime(GenAlbum.ZCLOUDLASTCONTRIBUTIONDATE + 978307200, 'UNIXEPOCH') AS 'GenAlbum Cloud Contrib. Date GenAlbum',
+  DateTime(GenAlbum.ZCLOUDLASTINTERESTINGCHANGEDATE + 978307200, 'UNIXEPOCH') AS 'GenAlbum Cloud Last Interesting Change Date GenAlbum',
+  DateTime(GenAlbum.ZCLOUDSUBSCRIPTIONDATE + 978307200, 'UNIXEPOCH') AS 'GenAlbum Cloud Subscription Date GenAlbum',
+  DateTime(CFE.ZENTRYDATE + 978307200, 'UNIXEPOCH') AS 'Entry Date CFE',
+  GenAlbum.ZPARENTFOLDER AS 'Parent Folder Key GenAlbum',
+  GenAlbum.ZTITLE AS 'GenAlbum Title - User & System Applied GenAlbum',
+  GenAlbum.ZCLOUDMETADATA AS 'HEX NSKeyed Plist Cloud Metadata GenAlbum',
+  GenAlbum.ZIMPORTEDBYBUNDLEIDENTIFIER AS 'Imported By Bundle Identifier GenAlbum',
+  GenAlbum.ZIMPORTSESSIONID AS 'Import Session ID GenAlbum',  
+  GenAlbum.ZKIND AS 'Generic Album Kind GenAlbum',
+  CASE GenAlbum.ZCLOUDMULTIPLECONTRIBUTORSENABLEDLOCAL
+    WHEN 0 THEN 'Single Contributor'
+    WHEN 1 THEN 'Multi-Contributors'
+    ELSE GenAlbum.ZCLOUDMULTIPLECONTRIBUTORSENABLEDLOCAL
+  END AS 'Cloud Multi-Contributors Enabled Local GenAlbum',
+  CASE GenAlbum.ZCLOUDMULTIPLECONTRIBUTORSENABLED
+    WHEN 0 THEN 'Single Contributor'
+    WHEN 1 THEN 'Multi-Contributors Enabled' 
+    ELSE GenAlbum.ZCLOUDMULTIPLECONTRIBUTORSENABLED
+  END AS 'Cloud Multi-Contributors Enabled GenAlbum',
+  CASE GenAlbum.ZCLOUDALBUMSUBTYPE
+    WHEN 0 THEN 'Multi-Contributors'
+    ELSE GenAlbum.ZCLOUDALBUMSUBTYPE
+  END AS 'Cloud Album Sub Type GenAlbum',
+  GenAlbum.ZPENDINGITEMSCOUNT AS 'Pending Items Count GenAlbum',
+  CASE GenAlbum.ZPENDINGITEMSTYPE
+    WHEN 1 THEN '1-Unknown'
+    WHEN 24 THEN '24-Unknown'
+    ELSE GenAlbum.ZPENDINGITEMSTYPE
+  END AS 'Pending Items Type GenAlbum',
+  GenAlbum.ZCACHEDCOUNT AS 'Cached Count GenAlbum',
+  GenAlbum.ZCACHEDPHOTOSCOUNT AS 'Cached Photos Count GenAlbum',
+  GenAlbum.ZCACHEDVIDEOSCOUNT AS 'Cached Videos Count GenAlbum',
+  CASE GenAlbum.ZHASUNSEENCONTENT
+    WHEN 0 THEN 'No'
+    ELSE GenAlbum.ZHASUNSEENCONTENT
+  END AS 'GenAlbum Has Unseen Content GenAlbum',
+  GenAlbum.ZUNSEENASSETSCOUNT AS 'Unseen Asset Count GenAlbum',
+  CASE GenAlbum.ZISOWNED
+    WHEN 0 THEN 'Not the Owner of Album'
+    WHEN 1 THEN 'Owner of the Album'
+    ELSE GenAlbum.ZISOWNED
+  END AS 'GenAlbum is Owned GenAlbum',
+  CASE GenAlbum.ZCLOUDRELATIONSHIPSTATE
+    WHEN 0 THEN 'Owner of the Album'
+    WHEN 2 THEN 'Not the Owner of Album'
+    ELSE GenAlbum.ZCLOUDRELATIONSHIPSTATE
+  END AS 'Cloud Relationship State GenAlbum',
+  CASE CFE.ZENTRYTYPENUMBER
+    WHEN 1 THEN '1-Unknown'
+    WHEN 2 THEN '2-Album Owner by Device Cloud Acnt'
+    WHEN 3 THEN '3-Unknown'
+    WHEN 4 THEN '4-Album Owned by Other Cloud Acnt'
+    WHEN 5 THEN '5-Has CFE Invite Record GUID'
+    ELSE CFE.ZENTRYTYPENUMBER
+  END AS 'Entry Type Number CFE',
+  CASE GenAlbum.ZCLOUDRELATIONSHIPSTATELOCAL
+    WHEN 0 THEN '0-Unknown'
+    ELSE GenAlbum.ZCLOUDRELATIONSHIPSTATELOCAL
+  END AS 'Cloud Relationship State Local GenAlbum',
+  GenAlbum.ZCLOUDOWNERFIRSTNAME AS 'Cloud Owner Frist Name GenAlbum',
+  GenAlbum.ZCLOUDOWNERLASTNAME AS 'Cloud Owner Last Name GenAlbum',
+  GenAlbum.ZCLOUDOWNERHASHEDPERSONID AS 'Cloud Owner Hashed Person ID GenAlbum',
+  GenAlbum.ZCLOUDPERSONID AS 'Cloud Person ID GenAlbum',
+  GenAlbum.ZCLOUDOWNERFULLNAME AS 'Cloud Owner Full Name GenAlbum',
+  GenAlbum.ZCLOUDOWNEREMAILKEY AS 'Cloud Owner Mail Key GenAlbum',
+  CASE GenAlbum.ZCLOUDOWNERISWHITELISTED 
+    WHEN 0 THEN 'No-Owner Not Whitelisted'
+    WHEN 1 THEN 'Yes-Owner Whitelisted'
+    ELSE GenAlbum.ZCLOUDOWNERISWHITELISTED
+  END AS 'Cloud Owner is Whitelisted GenAlbum',
+  CASE GenAlbum.ZCLOUDPUBLICURLENABLED
+    WHEN 0 THEN 'No'
+    WHEN 1 THEN 'Yes - URL Enabled'
+    ELSE GenAlbum.ZCLOUDPUBLICURLENABLED
+  END AS 'Cloud Public URL Enabled GenAlbum',
+  CASE GenAlbum.ZCLOUDPUBLICURLENABLEDLOCAL
+    WHEN 0 THEN 'No'
+    WHEN 1 THEN 'Yes - URL Enabled'
+    ELSE GenAlbum.ZCLOUDPUBLICURLENABLEDLOCAL
+  END AS 'Cloud Public URL Enabled Local GenAlbum',
+  GenAlbum.ZPUBLICURL AS 'Public URL GenAlbum',
+  CASE GenAlbum.ZCLOUDNOTIFICATIONSENABLED
+    WHEN 0 THEN 'No'
+    WHEN 1 THEN 'Yes - Notifications Enabled'
+    ELSE GenAlbum.ZCLOUDNOTIFICATIONSENABLED
+  END AS 'Cloud Notification Enabled GenAlbum',
+  CASE GenAlbum.ZISPINNED
+    WHEN 0 THEN '0-Unknown'
+    WHEN 1 THEN '1-Unknown'
+    ELSE GenAlbum.ZISPINNED
+  END AS 'File is Pinned GenAlbum',
+  CASE GenAlbum.ZCUSTOMSORTASCENDING
+    WHEN 0 THEN '0-Unknown'
+    WHEN 1 THEN '1-Unknown'
+    ELSE GenAlbum.ZCUSTOMSORTASCENDING
+  END AS 'Custom Sort Ascending GenAlbum',
+  CASE GenAlbum.ZISPROTOTYPE
+    WHEN 0 THEN '0-Unknown'
+    WHEN 1 THEN '1-Unknown'
+    ELSE GenAlbum.ZISPROTOTYPE
+  END AS 'Is Prototype GenAlbum',
+  CASE GenAlbum.ZPROJECTDOCUMENTTYPE
+    WHEN 0 THEN '0-Unknown'
+    ELSE GenAlbum.ZPROJECTDOCUMENTTYPE
+  END AS 'Project Document Type GenAlbum',
+  CASE GenAlbum.ZCUSTOMQUERYTYPE
+    WHEN 0 THEN '0-Unknown'
+    ELSE GenAlbum.ZCUSTOMQUERYTYPE
+  END AS 'Custom Query Type GenAlbum',
+  CASE GenAlbum.ZTRASHEDSTATE
+    WHEN 1 THEN 'In Trash'
+    WHEN 0 THEN 'Not In Trash'
+    ELSE GenAlbum.ZTRASHEDSTATE
+  END AS 'Trashed State GenAlbum',
+    CASE GenAlbum.ZCLOUDDELETESTATE
+    WHEN 0 THEN '0-Not Deleted'
+    WHEN 1 THEN '1-Deleted'
+    ELSE GenAlbum.ZCLOUDDELETESTATE
+  END AS 'Cloud Delete State GenAlbum',
+  GenAlbum.ZCUSTOMSORTKEY AS 'Custom Sort Key GenAlbum',
+  GenAlbum.ZKEYASSETFACETHUMBNAILINDEX AS 'Key Asset Face Thumbnail Index GenAlbum',
+  GenAlbum.ZPROJECTEXTENSIONIDENTIFIER AS 'Project Extension ID GenAlbum',
+  GenAlbum.ZUSERQUERYDATA AS 'User Query Data GenAlbum',
+  GenAlbum.ZPROJECTDATA AS 'Project Data GenAlbum',
+  GenAlbum.ZCUSTOMQUERYPARAMETERS AS 'Custom Query Parameters GenAlbum',
+  CASE SHA.ZSTATUS
+    WHEN 1 THEN '1-In Share Album'
+    ELSE SHA.ZSTATUS
+  END AS 'Share Album Status SHA',
+  DateTime(SHA.ZCREATIONDATE +978307200, 'UNIXEPOCH') AS 'Share Album Creation Date SHA',
+  DateTime(SHA.ZSTARTDATE +978307200, 'UNIXEPOCH') AS 'Share Album Start Date SHA',
+  DateTime(SHA.ZENDDATE +978307200, 'UNIXEPOCH') AS 'Share Album End Date SHA',
+  DateTime(SHA.ZEXPIRYDATE +978307200, 'UNIXEPOCH') AS 'Share Album Expiry Date SHA',
+  SHA.ZTITLE AS 'Share Album Share Title SHA',
+  SHA.ZSHAREURL AS 'Share Album Share URL SHA',
+  SHA.ZASSETCOUNT AS 'Share Album Asset Count SHA',
+  SHA.ZUPLOADEDPHOTOSCOUNT AS 'Share Album Uploaded Photos Count SHA',
+  SHA.ZPHOTOSCOUNT AS 'Share Album Photos Count SHA',
+  SHA.ZUPLOADEDVIDEOSCOUNT AS 'Share Album Uploaded Videos Count SHA', 
+  SHA.ZVIDEOSCOUNT AS 'Share Album Videos Count SHA',
+  SHA.ZFORCESYNCATTEMPTED AS 'Share Album Force Sync Attempted SHA',
+  SHA.ZSHOULDIGNOREBUDGETS AS 'Share Album Should Ignor Budgets SHA',
+  CASE SHA.ZSHOULDNOTIFYONUPLOADCOMPLETION
+    WHEN 0 THEN '0-No'
+    WHEN 1 THEN '1-Unknown'
+    ELSE SHA.ZSHOULDNOTIFYONUPLOADCOMPLETION
+  END AS 'Share Album Should Notify On Upload Completion SHA',
+  CASE SHA.ZLOCALPUBLISHSTATE
+    WHEN 0 THEN '0-Unknown'
+    WHEN 1 THEN '1-Unknown'
+	WHEN 2 THEN '2-Unknown'
+    ELSE SHA.ZLOCALPUBLISHSTATE
+  END AS 'Share Album Local Cloud Publish State SHA',
+  CASE SHA.ZPUBLICPERMISSION
+    WHEN 0 THEN '0-Unknown'
+    WHEN 1 THEN '1-Unknown'
+    WHEN 2 THEN '2-Unknown'
+    ELSE SHA.ZPUBLICPERMISSION
+  END AS 'Share Album Public Permission SHA',
+  CASE SHA.ZSCOPETYPE
+    WHEN 0 THEN '0-Unknown'
+    WHEN 1 THEN '1-Unknown'
+    WHEN 2 THEN '2-Unknown'
+    ELSE SHA.ZSCOPETYPE
+  END AS 'Share Album Scope Type SHA',
+  SHA.ZSCOPEIDENTIFIER AS 'Share Album Scope Identifier SHA',
+  SHA.ZORIGINATINGSCOPEIDENTIFIER AS 'Share Album Originating Scope Identifier SHA',
+  CASE SHA.ZTRASHEDSTATE
+    WHEN 0 THEN 'Not in Trash'
+    WHEN 1 THEN 'In the Trash'
+    ELSE SHA.ZTRASHEDSTATE
+  END AS 'Share Album Trashed State SHA',
+  CASE SHA.ZCLOUDDELETESTATE
+    WHEN 0 THEN '0-Not Deleted'
+    WHEN 1 THEN '1-Deleted'
+    ELSE SHA.ZCLOUDDELETESTATE
+  END AS 'Share Album Cloud Delete State SHA',
+  SHA.ZPREVIEWDATA AS 'HEX Share Album Preview Data SHA',
+  CASE CSAIR.ZINVITATIONSTATE
+    WHEN 1 THEN 'Pending'
+    WHEN 2 THEN 'Accepted'
+    WHEN 3 THEN 'Declined'
+    WHEN 4 THEN '4-Unknown'
+    WHEN 5 THEN '5-Unknown'
+    ELSE CSAIR.ZINVITATIONSTATE
+  END AS 'Invitation State Cloud Share Album Invite Rec',
+  SHAPart.ZACCEPTANCESTATUS AS 'Acceptance Status SHAPart',
+  CASE CSAIR.ZINVITATIONSTATELOCAL
+    WHEN 0 THEN '0-Unknown'
+    WHEN 1 THEN '1-Unknown'
+    ELSE CSAIR.ZINVITATIONSTATELOCAL
+  END AS 'Invitation State Local Cloud Share Album Invite Rec',
+  CSAIR.ZINVITEEEMAILKEY AS 'Invitee Email Key Cloud Share Album Invite Rec',
+  SHAPart.ZEMAILADDRESS AS 'Email Address SHAPart',
+  SHAPart.ZPHONENUMBER AS 'Phone Number SHAPart',
+  CASE CSAIR.ZISMINE
+    WHEN 0 THEN 'No was not sent to my account'
+    WHEN 1 THEN 'Yes was sent to my account'
+    ELSE CSAIR.ZISMINE
+  END AS 'Invite is Mine Cloud Share Album Invite Rec',
+  DateTime(CSAIR.ZINVITEESUBSCRIPTIONDATE + 978307200, 'UNIXEPOCH') AS 'Invitee Subscription Date Cloud Share Album Invite Rec',
+  CSAIR.ZINVITEEFIRSTNAME AS 'Invitee First Name Cloud Share Album Invite Rec',
+  CSAIR.ZINVITEEFULLNAME AS 'Invitee Full Name Cloud Share Album Invite Rec',
+  CSAIR.ZINVITEEHASHEDPERSONID AS 'Invitee Hashed Person ID Cloud Share Album Invite Rec',
+  CSAIR.ZINVITEELASTNAME AS 'Invitee Last Name Cloud Share Album Invite Rec',
+  MEM.ZCATEGORY AS 'Category Memory',
+  MEM.ZSUBCATEGORY AS 'Memory Sub Category Memory',
+  DateTime(MEM.ZCREATIONDATE + 978307200, 'UNIXEPOCH') AS 'Creation Date Memory',
+  CASE MEM.ZUSERACTIONOPTIONS
+    WHEN 0 THEN '0-No'
+    WHEN 1 THEN '1-Yes'
+    ELSE MEM.ZUSERACTIONOPTIONS
+  END AS 'User Action Option MEM',
+  MEM.ZSCORE AS 'Score Memory',
+  MEM.ZSUBTITLE AS 'Memory Sub Title Memory',
+  MEM.ZTITLE AS 'Memory Title Memory',
+  MEM.ZGRAPHMEMORYIDENTIFIER AS 'Graph Memory ID MEM',
+  MEM.ZPHOTOSGRAPHDATA AS 'HEX NSKeyed Plist Photos Graph Data Memory',
+  MEM.ZMOVIEASSETSTATE AS 'HEX NSKeyed Plist Movie Asset State Memory',
+  MEM.ZMOVIEDATA AS 'HEX NSKeyed Plist Movie Data Memory',
+  DateTime(MEM.ZLASTENRICHMENTDATE + 978307200, 'UNIXEPOCH') AS 'Last Enrichment Date MEM',
+  DateTime(MEM.ZLASTMOVIEPLAYEDDATE + 978307200, 'UNIXEPOCH') AS 'Last Movie Play Date Memory',
+  DateTime(MEM.ZLASTVIEWEDDATE + 978307200, 'UNIXEPOCH') AS 'Last Viewed Date Memory',
+  CASE MEM.ZPENDINGSTATE
+    WHEN 0 THEN '0-No'
+    WHEN 1 THEN '1-Yes'
+    WHEN 2 THEN '2-Unknown'
+    ELSE MEM.ZPENDINGSTATE
+  END AS 'Pending State MEM',
+  MEM.ZPENDINGPLAYCOUNT AS 'Memory Pending Play Count Memory',
+  MEM.ZPENDINGSHARECOUNT AS 'Memory Pending Share Count Memory',
+  MEM.ZPENDINGVIEWCOUNT AS 'Memory Pending View Count Memory',
+  MEM.ZVIEWCOUNT AS 'Memory View Count Memory',
+  MEM.ZPLAYCOUNT AS 'Memory Play Count Memory',
+  MEM.ZREJECTED AS 'Memory Rejected Memory',
+  MEM.ZSHARECOUNT AS 'Memory Share Count Memory',
+  CASE MEM.ZSTORYSERIALIZEDTITLECATEGORY 
+    WHEN 0 THEN '0-Unknown'
+    WHEN 1 THEN '1-Unknown'
+    WHEN 2 THEN '2-Unknown'
+    WHEN 3 THEN '3-Unknown'
+    WHEN 4 THEN '4-Unknown'
+	WHEN 5 THEN '5-Unknown'
+	WHEN 6 THEN '6-Unknown'
+    ELSE MEM.ZSTORYSERIALIZEDTITLECATEGORY
+  END AS 'Story Serialized Title Category MEM',
+  CASE MEM.ZFEATUREDSTATE
+    WHEN 0 THEN '0-Unknown'
+    WHEN 1 THEN '1-Unknown'
+    ELSE MEM.ZFEATUREDSTATE
+  END AS 'Memory Featured State Memory',
+  CASE SUGG.ZFEATUREDSTATE
+    WHEN 0 THEN '0-Unknown'
+    WHEN 1 THEN '1-Unknown'
+    ELSE SUGG.ZFEATUREDSTATE
+  END AS 'Suggestion Featured State SUGG',
+  CASE MEM.ZNOTIFICATIONSTATE
+    WHEN 0 THEN '0-Unknown'
+    WHEN 1 THEN '1-Unknown'
+    WHEN 2 THEN '2-Unknown'
+    ELSE MEM.ZNOTIFICATIONSTATE
+  END AS 'Memory Notification State Memory',
+  CASE SUGG.ZNOTIFICATIONSTATE
+    WHEN 0 THEN '0-Unknown'
+    WHEN 1 THEN '1-Unknown'
+    ELSE SUGG.ZNOTIFICATIONSTATE
+  END AS 'Suggestion Notification State SUGG',
+  MEM.ZUUID AS 'Memory UUID Memory',
+  MEM.ZASSETLISTPREDICATE AS 'Asset List Predicte Memory',
+  CASE MEM.ZSTORYCOLORGRADEKIND  
+    WHEN 0 THEN '0-Unknown'
+    WHEN 1 THEN '1-Unknown'
+    WHEN 2 THEN '2-Unknown'
+    WHEN 3 THEN '3-Unknown'
+    WHEN 4 THEN '4-Unknown'
+    ELSE MEM.ZSTORYCOLORGRADEKIND
+  END AS 'Story Color Grade Kind MEM',
+  MEM.ZBLACKLISTEDFEATURE AS 'Black Listed Feature MEM',
+  DateTime(MOM.ZSTARTDATE + 978307200, 'UNIXEPOCH') AS 'Moment Start Date',
+  DateTime(SUGG.ZSTARTDATE +978307200, 'UNIXEPOCH') AS 'Start Date SUGG',
+  DateTime(PH.ZSTARTDATE + 978307200, 'UNIXEPOCH') AS 'Photos Highlight Start Date PH',
+  DateTime(MOM.ZREPRESENTATIVEDATE + 978307200, 'UNIXEPOCH') AS 'Moment Representative Date',
+  DateTime(SUGG.ZCREATIONDATE +978307200, 'UNIXEPOCH') AS 'Creation Date SUGG',
+  DateTime(MOM.ZMODIFICATIONDATE + 978307200, 'UNIXEPOCH') AS 'Moment Modification Date',
+  DateTime(MOM.ZENDDATE + 978307200, 'UNIXEPOCH') AS 'Moment End Date Moment',
+  DateTime(SUGG.ZENDDATE +978307200, 'UNIXEPOCH') AS 'End Date SUGG',
+  DateTime(SUGG.ZACTIVATIONDATE +978307200, 'UNIXEPOCH') AS 'Activation Date SUGG',
+  DateTime(PH.ZENDDATE+ 978307200, 'UNIXEPOCH') AS 'Photos Highlight End Date PH',
+  DateTime(SUGG.ZEXPUNGEDATE +978307200, 'UNIXEPOCH') AS 'Expunge Date SUGG',
+  DateTime(SUGG.ZRELEVANTUNTILDATE +978307200, 'UNIXEPOCH') AS 'Relevant Until Date SUGG',
+  MOM.ZTIMEZONEOFFSET AS 'Moment Time Zone Offset',
+  PH.ZSTARTTIMEZONEOFFSET AS 'PHighlight Start Time Zone Offset PH',
+  PH.ZENDTIMEZONEOFFSET AS 'PHighlight End Time Zone Offset PH',
+  CASE MOM.ZORIGINATORSTATE
+    WHEN 0 THEN '0-Unknown'
+    WHEN 1 THEN '1-Unknown'
+    ELSE MOM.ZORIGINATORSTATE
+  END AS 'Originator State MEM',
+  MOM.ZTITLE AS 'Moment Title', 
+  MOM.ZSUBTITLE AS 'Moment Sub Title',
+  PH.ZTITLE AS 'Photos Highlight Title',
+  PH.ZSUBTITLE AS 'Photos Highlight Sub Title',
+  PH.ZVERBOSESMARTDESCRIPTION AS 'Photos Highlight Verbose Smart Description PH',
+  MOM.ZLOCALIZEDLOCATIONNAMES AS 'HEX NSKeyed Plist Moment Location Name',
+  SUGG.ZTITLE AS 'Suggestion Title',
+  SUGG.ZSUBTITLE AS 'Suggestion Sub Title',
+  CASE MOM.ZAPPROXIMATELATITUDE
+    WHEN -180.0 THEN '0'
+    ELSE MOM.ZAPPROXIMATELATITUDE
+  END AS 'Moment Approx Latitude',
+  CASE MOM.ZAPPROXIMATELONGITUDE
+    WHEN -180.0 THEN '0'
+    ELSE MOM.ZAPPROXIMATELONGITUDE
+  END AS 'Moment Approx Longitude',
+  CASE MOM.ZGPSHORIZONTALACCURACY
+    WHEN -1.0 THEN 'Not Valid'
+    ELSE MOM.ZGPSHORIZONTALACCURACY
+  END AS 'Moment GPS Horizontal Accuracy',
+  MOM.ZCACHEDPHOTOSCOUNT AS 'Moment Cached Photos Count',
+  MOM.ZCACHEDVIDEOSCOUNT AS 'Moment Cached Videos Count',
+  MOM.ZPROCESSEDLOCATION AS 'Moment Processed Location',
+  SUGG.ZCACHEDCOUNT AS 'Cached Count SUGG',
+  SUGG.ZCACHEDPHOTOSCOUNT AS 'Cahed Photos Count SUGG',
+  SUGG.ZCACHEDVIDEOSCOUNT AS 'Cached Videos Count SUGG',
+  PH.ZSUMMARYCOUNT AS 'Photos Highlight Summary Count PH',
+  PH.ZASSETSCOUNT AS 'Photos Highlight Asset Count PH',
+  PH.ZEXTENDEDCOUNT AS 'Photos Highlight Extended Count PH',
+  MOM.ZCACHEDCOUNT AS 'Moment Cache Count',
+  MOM.ZAGGREGATIONSCORE AS 'Moment Aggregation Score',
+  PH.ZDAYGROUPASSETSCOUNT AS 'PHighlight Day Group Assets Count PH',
+  PH.ZDAYGROUPEXTENDEDASSETSCOUNT AS 'PHightlight Day Group Extended Assets Count PH',
+  PH.ZDAYGROUPSUMMARYASSETSCOUNT AS 'PHightlight Summary Assets Count PH',
+  CASE MOM.ZTRASHEDSTATE
+    WHEN 1 THEN 'In Trash'
+    WHEN 0 THEN 'Not In Trash'
+    ELSE MOM.ZTRASHEDSTATE
+  END AS 'Moment Trash State',
+  PH.ZPROMOTIONSCORE AS 'Promotion Score PH',
+  CASE PH.ZCATEGORY
+    WHEN 0 THEN '0-Unknown'
+    WHEN 1 THEN '1-Unknown'
+    WHEN 2 THEN '2-Unknown'
+    WHEN 3 THEN '3-Unknown'
+    ELSE PH.ZCATEGORY
+  END AS 'Photos Highlight Category PH',
+  CASE PH.ZENRICHMENTSTATE
+    WHEN 0 THEN '0-Unknown'
+    WHEN 1 THEN '1-Unknown'
+    WHEN 2 THEN '2-Unknown'
+    WHEN 3 THEN '3-Unknown'
+    WHEN 4 THEN '4-Unknown'
+    ELSE PH.ZENRICHMENTSTATE
+  END AS 'Enrichment State PH',
+  CASE PH.ZKIND
+    WHEN 0 THEN '0-Unknown'
+    WHEN 1 THEN '1-Unknown'
+    WHEN 2 THEN '2-Unknown'
+    WHEN 3 THEN '3-Unknown'
+    ELSE PH.ZKIND
+  END AS 'Photos Highlight Kind PH',
+  CASE PH.ZMOOD
+    WHEN 0 THEN '0-Unknown'
+    WHEN 1 THEN '1-Unknown'
+    WHEN 2 THEN '2-Unknown'
+    WHEN 3 THEN '3-Unknown'
+    WHEN 4 THEN '4-Unknown'
+    WHEN 16 THEN '16-Unknown'
+    WHEN 128 THEN '128-Unknown'
+    WHEN 512 THEN '512-Unknown'
+    ELSE PH.ZMOOD
+  END AS 'Photos Highlight Mood PH',
+  CASE PH.ZTYPE
+    WHEN 0 THEN '0-Unknown'
+    WHEN 1 THEN '1-Unknown'
+    WHEN 2 THEN '2-Unknown'
+    WHEN 3 THEN '3-Unknown'
+    WHEN 4 THEN '4-Unknown'
+    WHEN 5 THEN '5-Unknown'
+    WHEN 6 THEN '6-Unknown'
+    ELSE PH.ZTYPE
+  END AS 'Photos Highlight Type PH',
+  CASE SUGG.ZTYPE
+    WHEN 5 THEN '5-Unknown-Location'
+    ELSE SUGG.ZTYPE
+  END AS 'Suggestion Type',
+  CASE SUGG.ZSUBTYPE
+    WHEN 501 THEN '501-Unknown'
+    WHEN 502 THEN '502-Unknown'
+    ELSE SUGG.ZSUBTYPE
+  END AS 'Suggestion Sub Type',
+  CASE PH.ZVISIBILITYSTATE
+    WHEN 0 THEN '0-Unknown'
+    WHEN 1 THEN '1-Unknown'
+    WHEN 2 THEN '2-Unknown'
+    WHEN 3 THEN '3-Unknown'
+    WHEN 4 THEN '4-Unknown'
+    ELSE PH.ZVISIBILITYSTATE
+  END AS 'Visibility State PH',
+  SUGG.ZACTIONDATA AS 'Action Data SUGG',
+  SUGG.ZFEATURESDATA AS 'HEX NSKeyed Plist Features Data - Device Info SUGG',
+  ZAddAssetAttr.ZFACEREGIONS AS 'HEX Face Regions AddAssetAttr',
+  CASE
+    WHEN ZASSET.ZFACEAREAPOINTS > 0 THEN 'Yes'
+    ELSE 'No'
+  END AS 'Face Detected in Photo Asset',
+  PER.ZFACECOUNT AS 'Face Count Person',
+  MedAnalyAsset.ZFACECOUNT AS 'Face Count MedAnalyAsset',
+  DF.ZPERSON AS 'Person Key Detected Face',
+  FC.ZPERSON AS 'Person Key FC',
+  PER.Z_PK AS 'Person zPK',
+  DF.ZPERSONBEINGKEYFACE AS 'Person Being Key Face Detected Face',
+  PER.ZKEYFACE AS 'Key Face Key Person',
+  FC.ZFACE AS 'Face Key FC',
+  CASE PER.ZDETECTIONTYPE   
+    WHEN 0 THEN '0-Unknown' 
+    WHEN 1 THEN '1-Unknown'
+    ELSE PER.ZDETECTIONTYPE
+  END AS 'Detection Type PER',
+  CASE PER.ZTYPE
+    WHEN 0 THEN '0-Unknown'
+    WHEN 1 THEN '1-Unknown'
+    ELSE PER.ZTYPE
+  END AS 'Type Person',
+  CASE PER.ZVERIFIEDTYPE
+    WHEN 0 THEN 'Not Verified'
+    WHEN 1 THEN 'Verified Person'
+    ELSE PER.ZVERIFIEDTYPE
+  END AS 'Verified Type Person',
+  PER.ZDISPLAYNAME AS 'Display Name Person',
+  PER.ZFULLNAME AS 'Full Name Person',
+  PER.ZCONTACTMATCHINGDICTIONARY AS 'HEX Contact Matching Dictionary Person',
+  FC.ZRESOURCEDATA AS 'HEX Resource Data Photo of Person FC',
+  PER.ZPERSONUUID AS 'Person UUID Person',
+  DF.ZUUID AS 'Detected Face UUID',
+  FC.ZINVALIDMERGECANDIDATEPERSONUUID AS 'Invalid Merge Canidate Person UUID FC',
+  FC.ZUUID AS 'Face Crop UUID',
+  Case FC.ZCLOUDTYPE
+    WHEN 12 THEN '12-Unknown'
+    ELSE FC.ZCLOUDTYPE
+  END AS 'Cloud Type FC',
+  CASE FC.ZSTATE
+    WHEN 5 THEN '5-Unknown'
+    ELSE FC.ZSTATE
+  END AS 'State FC',
+  CASE FC.ZTYPE 
+    WHEN 1 THEN '1-Unknown'
+    ELSE FC.ZTYPE
+  END AS 'Type FC',
+  PER.ZPERSONURI AS 'Person URI Person',
+  CASE DF.ZTRAININGTYPE
+    WHEN 5 THEN '5-Unknown'
+    ELSE ZTRAININGTYPE
+  END AS 'Training Type Detected Face',
+  CASE DF.ZVIPMODELTYPE 
+    WHEN 0 THEN 'Not VIP'
+    WHEN 1 THEN 'Is a VIP'
+    ELSE DF.ZVIPMODELTYPE
+  END AS 'VIP Model Type Detected Face',
+  DF.ZFACEGROUP AS 'Face Group Detected Face',
+  DF.ZFACEGROUPBEINGKEYFACE AS 'Face Group Being Key Face DF',
+  PER.ZASSOCIATEDFACEGROUP AS 'Assocated Face Group Key Person',
+  DF.ZFACECROP AS 'Face Crop Detected Face',
+  DF.ZCONFIRMEDFACECROPGENERATIONSTATE AS 'Confirmed Face Crop Generation State Detected Face',
+  CASE DF.ZNAMESOURCE
+    WHEN 5 THEN '5-Unknown'
+    ELSE DF.ZNAMESOURCE
+  END AS 'Name Source Detected Face',
+  CASE DF.ZCLOUDNAMESOURCE
+    WHEN 5 THEN '5-Unknown'
+    ELSE DF.ZCLOUDNAMESOURCE
+  END AS 'Cloud Name Source Detected Face',
+  DF.ZFACEPRINT AS 'Face Print Detected Face',
+  DF.ZBLURSCORE AS 'DF Blur Score',
+  DF.ZQUALITY AS 'DF Quality',
+  DF.ZBODYCENTERX AS 'DF Body Center X',
+  DF.ZBODYCENTERY AS 'DF Body Center Y',
+  DF.ZBODYHEIGHT AS 'DF Body Height',
+  DF.ZBODYWIDTH AS 'DF Body Width',
+  DF.ZCENTERX AS 'DF Center X',
+  DF.ZCENTERY AS 'DF Center Y',
+  CASE DF.ZDETECTIONTYPE
+    WHEN 0 THEN '0-Unknown'
+    WHEN 1 THEN '1-Unknown'
+    WHEN 2 THEN '2-Unknown'
+    WHEN 3 THEN '3-Unknown'
+    WHEN 4 THEN '4-Unknown'
+    WHEN 5 THEN '5-Unknown'
+    ELSE DF.ZDETECTIONTYPE
+  END AS 'Face Detection Type DF',
+  CASE DF.ZAGETYPE
+    WHEN 0 THEN '0-Unknown'
+    WHEN 1 THEN 'Baby/Toddler'
+    WHEN 2 THEN 'Baby/Toddler'
+    WHEN 3 THEN 'Child/YoungAdult'
+    WHEN 4 THEN 'YoungAdult/Adult'
+    WHEN 5 THEN 'Adult'
+    ELSE DF.ZAGETYPE
+  END AS 'Age Type Estimate Detected Face',
+  CASE PER.ZAGETYPE
+    WHEN 0 THEN '0-Unknown'
+    WHEN 1 THEN '1-Baby/Toddler'
+    WHEN 2 THEN '2-Baby/Toddler'
+    WHEN 3 THEN '3-Child/YoungAdult'
+    WHEN 4 THEN '4-YoungAdult/Adult'
+    WHEN 5 THEN '5-Adult'
+    ELSE PER.ZAGETYPE
+  END AS 'Age Type Estimate Person',
+  CASE DF.ZGENDERTYPE
+    WHEN 0 THEN '0-Unknown'
+    WHEN 1 THEN 'Male'
+    WHEN 2 THEN 'Female'
+    ELSE DF.ZGENDERTYPE
+  END AS 'Gender Type Detected Face',
+  CASE PER.ZGENDERTYPE
+    WHEN 0 THEN '0-Unknown'
+    WHEN 1 THEN 'Male'
+    WHEN 2 THEN 'Female'
+    ELSE PER.ZGENDERTYPE
+  END AS 'Gender Type Person',
+  CASE DF.ZETHNICITYTYPE
+    WHEN 0 THEN '0-Unknown'
+    WHEN 1 THEN '1-Unknown'
+    WHEN 2 THEN '2-Unknown'
+    WHEN 3 THEN '3-Unknown'
+    WHEN 4 THEN '4-Unknown'
+    WHEN 5 THEN '5-Unknown'
+    ELSE DF.ZETHNICITYTYPE
+  END AS 'Face Ethnicity Type DF',
+  CASE DF.ZSKINTONETYPE
+    WHEN 0 THEN '0-Unknown'
+    WHEN 1 THEN '1-Unknown'
+    WHEN 2 THEN '2-Unknown'
+    WHEN 3 THEN '3-Unknown'
+    WHEN 4 THEN '4-Unknown'
+    WHEN 5 THEN '5-Unknown'
+    ELSE DF.ZSKINTONETYPE
+  END AS 'Skin Tone Type DF',
+  CASE DF.ZHAIRCOLORTYPE
+    WHEN 0 THEN '0-Unknown'
+    WHEN 1 THEN '1-Unknown'
+    WHEN 2 THEN '2-Unknown'
+    WHEN 3 THEN '3-Unknown'
+    WHEN 4 THEN '4-Unknown'
+    WHEN 5 THEN '5-Unknown'
+    WHEN 6 THEN '6-Unknown'
+    ELSE DF.ZHAIRCOLORTYPE
+  END AS 'Hair Color Type Detected Face',
+  DF.ZMOUTHX AS 'DF Mouth X',
+  DF.ZMOUTHY AS 'DF Mouth Y',
+  CASE DF.ZHASSMILE
+    WHEN 0 THEN 'No Smile'
+    WHEN 1 THEN 'Yes Smile'
+    ELSE DF.ZHASSMILE
+  END AS 'Has Smile Detected Face',
+  CASE DF.ZSMILETYPE
+    WHEN 0 THEN '0-Unknown'
+    WHEN 1 THEN 'No Teeth'
+    WHEN 2 THEN 'Teeth Showing'
+    ELSE DF.ZSMILETYPE
+  END AS 'Smile Type Detected Face',
+  CASE DF.ZFACEEXPRESSIONTYPE
+    WHEN 0 THEN '0-Unknown'
+    WHEN 1 THEN '1-Unknown'
+    WHEN 2 THEN '2-Unknown'
+    WHEN 3 THEN '3-Unknown'
+    WHEN 4 THEN '4-Unknown'
+    WHEN 5 THEN '5-Unknown'
+    ELSE DF.ZFACEEXPRESSIONTYPE
+  END AS 'Face Expression Type DF',
+  CASE DF.ZLIPMAKEUPTYPE
+    WHEN 0 THEN 'None'
+    WHEN 1 THEN 'Lip Makeup Detected'
+    ELSE DF.ZLIPMAKEUPTYPE
+  END AS 'Lip Makeup Type Detected Face',
+  DF.ZMANUAL AS 'Manual Detected Face',
+  CASE DF.ZEYESSTATE
+    WHEN 0 THEN 'Unknown'
+    WHEN 1 THEN 'Closed'
+    WHEN 2 THEN 'Open'
+    ELSE DF.ZEYESSTATE
+  END AS 'Eyes State Detected Face',
+  DF.ZLEFTEYEX AS 'DF Left Eye X',
+  DF.ZLEFTEYEY AS 'DF Left Eye Y',
+  CASE DF.ZISLEFTEYECLOSED
+    WHEN 0 THEN 'No'
+    WHEN 1 THEN 'Yes'
+    ELSE DF.ZISLEFTEYECLOSED
+  END AS 'Is Left Eye Closed Detected Face',
+  DF.ZRIGHTEYEX AS 'DF Right Eye X',
+  DF.ZRIGHTEYEY AS 'DF Right Eye Y',
+  CASE DF.ZISRIGHTEYECLOSED
+    WHEN 0 THEN 'No'
+    WHEN 1 THEN 'Yes'
+    ELSE DF.ZISRIGHTEYECLOSED
+  END AS 'Is Right Eye Closed Detected Face',
+  DF.ZGAZECENTERX AS 'DF Gaze Center X',
+  DF.ZGAZECENTERY AS 'DF Gaze Center Y',
+  CASE DF.ZGAZETYPE
+    WHEN 0 THEN '0-Unknown'
+    WHEN 1 THEN '1-Unknown'
+    WHEN 2 THEN '2-Unknown'
+    WHEN 3 THEN '3-Unknown'
+    WHEN 4 THEN '4-Unknown'
+    WHEN 5 THEN '5-Unknown'
+    ELSE DF.ZGAZETYPE
+  END AS 'Face Gaze Type DF',
+  CASE DF.ZGLASSESTYPE
+    WHEN 0 THEN '0-Unknown'
+    WHEN 3 THEN 'None'
+    WHEN 2 THEN 'Sun Glasses'
+    WHEN 1 THEN 'Eye Glasses'
+    ELSE DF.ZGLASSESTYPE
+  END AS 'Eye Glasses Type Detected Face',
+  CASE DF.ZEYEMAKEUPTYPE
+    WHEN 0 THEN 'No Eye Makeup'
+    WHEN 1 THEN 'Eye Makeup Detected'
+    ELSE DF.ZEYEMAKEUPTYPE
+  END AS 'Eye Makeup Type Detected Face',
+  CASE DF.ZFACIALHAIRTYPE
+    WHEN 0 THEN '0-Unknown'
+    WHEN 1 THEN '1-None'
+    WHEN 2 THEN '2-Beard'
+    WHEN 3 THEN '3-Goatee'
+    WHEN 4 THEN '4-Mustache'
+    WHEN 5 THEN '5-Stubble'
+    ELSE DF.ZFACIALHAIRTYPE
+  END AS 'Facial Hair Type Detected Face',
+  CASE DF.ZHASFACEMASK
+    WHEN 0 THEN '0-No'
+    WHEN 1 THEN '1-Unknown'
+    WHEN 2 THEN '2-Unknown'
+    ELSE DF.ZHASFACEMASK
+  END AS 'Has Face Mask DF',
+  CASE DF.ZHEADGEARTYPE
+    WHEN 0 THEN '0-Unknown'
+    WHEN 1 THEN '1-Unknown'
+    WHEN 2 THEN '2-Unknown'
+    WHEN 3 THEN '3-Unknown'
+    WHEN 4 THEN '4-Unknown'
+    WHEN 5 THEN '5-Unknown'
+    ELSE DF.ZHEADGEARTYPE
+  END AS 'Head Gear Type DF',
+  DF.ZPOSEYAW AS 'DF Pose Yaw',
+  CASE DF.ZPOSETYPE
+    WHEN 0 THEN '0-Unknown'
+    WHEN 1 THEN '1-Unknown'
+    WHEN 2 THEN '2-Unknown'
+    WHEN 3 THEN '3-Unknown'
+    WHEN 4 THEN '4-Unknown'
+    WHEN 5 THEN '5-Unknown'
+    ELSE DF.ZPOSETYPE
+  END AS 'Pose Type DF',
+  DF.ZROLL AS 'DF Roll',
+  DF.ZSIZE AS'DF Size',
+  DF.ZYAW AS 'DF Yaw',  
+  DF.ZCLUSTERSEQUENCENUMBER AS 'Cluster Squence Number Key Detected Face', 
+  PER.ZINPERSONNAMINGMODEL AS 'In Person Naming Model Person',
+  PER.ZKEYFACEPICKSOURCE AS 'Key Face Pick Source Key Person',
+  PER.ZMANUALORDER AS 'Manual Order Person Key',
+  PER.ZQUESTIONTYPE AS 'Question Type Person',
+  PER.ZSUGGESTEDFORCLIENTTYPE AS 'Suggested For Client Type Person',
+  PER.ZMERGETARGETPERSON AS 'Merge Target Person Person',
+  DFP.Z_PK AS 'Detected Face Print zPK',
+  DFP.ZFACE AS 'Face Key DFP',
+  DFP.ZDATA AS 'HEX Detected Face Print Data', 
+  ZASSET.ZHEIGHT AS 'File Height Asset',
+  ZAddAssetAttr.ZORIGINALHEIGHT AS 'Org File Height AddAssetAttr',
+  DF.ZSOURCEHEIGHT AS 'Source Height Detected Face',
+  IR.ZUNORIENTEDHEIGHT AS 'Unoriented Height Internal Resource',
+  CLDRes.ZHEIGHT AS 'Hight CLDRes',
+  ZASSET.ZWIDTH AS 'File Width Asset',
+  ZAddAssetAttr.ZORIGINALWIDTH AS 'Org File Width AddAssetAttr',
+  DF.ZSOURCEWIDTH AS 'Source Width Detected Face',
+  IR.ZUNORIENTEDWIDTH AS 'Unoriented Width Internal Resource',
+  CLDRes.ZWIDTH AS 'Width CLDRes',
+  ZAddAssetAttr.ZORIGINALFILESIZE AS 'Original File Size AddAssetAttr',
+  CLDRes.ZFILESIZE AS 'File Size CLDRes',
+  IR.ZDATALENGTH AS 'Data Length Internal Resource',
+  ZASSET.ZHDRGAIN AS 'HDR Gain Asset',
+  CASE ZASSET.ZHDRTYPE
+    WHEN 0 THEN '0-HDR was not used'
+	WHEN 1 THEN '1-Unknown'
+	WHEN 2 THEN '2-HDR was used'
+	WHEN 3 THEN '3-HDR was used'
+	WHEN 4 THEN '4-HDR was used'
+	ELSE ZASSET.ZHDRTYPE
+  END AS 'HDR Type Asset',
+  ZASSET.ZVIDEOKEYFRAMETIMESCALE AS 'Video Key Frame Time Scale Asset',
+  ZASSET.ZHIGHFRAMERATESTATE AS 'High Frame Rate State Asset',
+  ZASSET.ZVIDEOCPVISIBILITYSTATE AS 'Video CP Visibility State Asset',
+  ZASSET.ZVIDEOKEYFRAMEVALUE AS 'Video Key Frame Value Asset',
+  
+  
+  
+  ZAddAssetAttr.ZVIDEOCPDISPLAYTIMESCALE AS 'Video CP Display Time Scale AddAssetAttr',
+  ZAddAssetAttr.ZVIDEOCPDISPLAYVALUE AS 'Video CP Display Value AddAssetAttr',
+  ZAddAssetAttr.ZVIDEOCPDURATIONTIMESCALE AS 'Video CP Duration Time Scale AddAssetAttr',
+  ZAddAssetAttr.ZEDITEDIPTCATTRIBUTES AS 'Edited IPTC Attributes AddAssetAttr',
+  MedAnalyAsset.ZAUDIOCLASSIFICATION AS 'Audio Classification MedAnalyAsset',
+  MedAnalyAsset.ZBESTVIDEORANGEDURATIONTIMESCALE AS 'Best Video Range Duration Time Scale MedAnalyAsset',
+  MedAnalyAsset.ZBESTVIDEORANGEDURATIONVALUE AS 'Best Video Range Duration Value MedAnalyAsset',
+  MedAnalyAsset.ZBESTVIDEORANGESTARTTIMESCALE AS 'Best Video Range Start Time Scale MedAnalyAsset',
+  MedAnalyAsset.ZBESTVIDEORANGESTARTVALUE AS 'Best Video Range Start Value MedAnalyAsset',
+  MedAnalyAsset.ZPACKEDBESTPLAYBACKRECT AS 'Packed Best Playback Rect MedAnalyAsset',
+  MedAnalyAsset.ZACTIVITYSCORE AS 'Activity Score MedAnalyAsset',
+  MedAnalyAsset.ZAUTOPLAYSUGGESTIONSCORE AS 'AutoPlay Suggestion Score MedAnalyAsset',
+  MedAnalyAsset.ZBLURRINESSSCORE AS 'Blurriness Score MedAnalyAsset',
+  MedAnalyAsset.ZEXPOSURESCORE AS 'Exposure Score MedAnalyAsset',
+  MedAnalyAsset.ZVIDEOSCORE AS 'Video Score MediaAnalyAsset', 
+  MedAnalyAsset.ZPROBABLEROTATIONDIRECTION AS 'Probable Rotation Direction MedAnalyAsset',
+  MedAnalyAsset.ZPROBABLEROTATIONDIRECTIONCONFIDENCE AS 'Probable Rotation Direction Confidence MedAnalyAsset',
+  CASE MedAnalyAsset.ZSCREENTIMEDEVICEIMAGESENSITIVITY  
+    WHEN -1 THEN 'Not Valid'
+    ELSE MedAnalyAsset.ZSCREENTIMEDEVICEIMAGESENSITIVITY
+  END AS 'Screen Timed Device Image Sensitivity MedAnalyAsset',
+  MedAnalyAsset.ZSYNDICATIONPROCESSINGVALUE AS 'Syndication Processing Value MedAnalyAsset',
+  MedAnalyAsset.ZSYNDICATIONPROCESSINGVERSION AS 'Syndication Processing Version MedAnalyAsset',
+  ZASSET.ZTHUMBNAILINDEX AS 'Thumbnail Index Asset',
+  ZAddAssetAttr.ZEMBEDDEDTHUMBNAILHEIGHT AS 'Embedded Thumbnail Height AddAssetAttr',
+  ZAddAssetAttr.ZEMBEDDEDTHUMBNAILLENGTH AS 'Embedded Thumbnail Lenght AddAssetAttr',
+  ZAddAssetAttr.ZEMBEDDEDTHUMBNAILOFFSET AS 'Embedded Thumbnail Offset AddAssetAttr',
+  ZAddAssetAttr.ZEMBEDDEDTHUMBNAILWIDTH AS 'Embedded Thumbnail Width AddAssetAttr',
+  SHA.ZTHUMBNAILIMAGEDATA AS 'Share Album Thumbnail Image Data SHA',
+  ZASSET.ZPACKEDACCEPTABLECROPRECT AS 'Packed Acceptable Crop Rect Asset',
+  ZASSET.ZPACKEDBADGEATTRIBUTES AS 'Packed Badge Attributes Asset',
+  ZASSET.ZPACKEDPREFERREDCROPRECT AS 'Packed Preferred Crop Rect Asset',
+  ZASSET.ZCURATIONSCORE AS 'Curation Score Asset',
+  ZASSET.ZCAMERAPROCESSINGADJUSTMENTSTATE AS 'Camera Processing Adjustment State Asset',
+  ZASSET.ZDEPTHTYPE AS 'Depth Type Asset',
+  ZASSET.ZLIBRARYSCOPE AS 'Library Scope Key Asset',
+  ZASSET.ZLIBRARYSCOPEORIGINATOR AS 'Library Scope Originator Key Asset',
+  ZAddAssetAttr.ZVARIATIONSUGGESTIONSTATES AS 'Variation Suggestions States AddAssetAttr',
+  ExtAttr.Z_PK AS 'Extended Attributes zPK',
+  ExtAttr.ZFOCALLENGTHIN35MM AS 'Focal Length in 35 MM ExtAttr',
+  ExtAttr.ZISO AS 'Iso ExtAttr',
+  ExtAttr.ZMETERINGMODE AS 'Metering Mode ExtAttr',
+  ExtAttr.ZSAMPLERATE AS 'Sample Rate ExtAttr',
+  ExtAttr.ZSLUSHPRESET AS 'Slush Preset ExtAttr',
+  ExtAttr.ZSLUSHVERSION AS 'Slush Version ExtAttr',
+  ExtAttr.ZTRACKFORMAT AS 'Track Format ExtAttr',
+  ExtAttr.ZWHITEBALANCE AS 'White Balance ExtAttr',
+  ExtAttr.ZAPERTURE AS 'Aperture ExtAttr',
+  ExtAttr.ZBITRATE AS 'Bit Rate ExtAttr',
+  ExtAttr.ZDIGITALZOOMRATIO AS 'Digital Zoom Ration ExtAttr',
+  ExtAttr.ZDURATION AS 'Duration ExtAttr',
+  ExtAttr.ZEXPOSUREBIAS AS 'Exposure Bias ExtAttr',
+  ExtAttr.ZFOCALLENGTH AS 'Focal Length ExtAttr',
+  ExtAttr.ZFPS AS 'FPS ExtAttr',
+  ExtAttr.ZSHUTTERSPEED AS 'Shutter Speed ExtAttr',
+  ExtAttr.ZSLUSHSCENEBIAS AS 'Slush Scene Bias ExtAttr',
+  ExtAttr.ZSLUSHWARMTHBIAS AS 'Slush Warmth Bias ExtAttr',
+  CAA.ZASSET AS 'Asset Key CAA',
+  CAA.ZBEHAVIORALSCORE AS 'Behavioral Score CAA',
+  CAA.ZFAILURESCORE AS 'Failure Score CAA',
+  CAA.ZHARMONIOUSCOLORSCORE AS 'Harmonious Color Score',
+  CAA.ZIMMERSIVENESSSCORE AS 'Immersiveness Score CAA',
+  CAA.ZINTERACTIONSCORE AS 'Interaction Score CAA',
+  CAA.ZINTERESTINGSUBJECTSCORE AS 'Intersting Subject Score',
+  CAA.ZINTRUSIVEOBJECTPRESENCESCORE AS 'Intrusive Object Presence Score CAA',
+  CAA.ZLIVELYCOLORSCORE AS 'Lively Color Score',
+  CAA.ZLOWLIGHT AS 'Low Light CAA',
+  CAA.ZNOISESCORE AS 'Noise Score CAA',
+  CAA.ZPLEASANTCAMERATILTSCORE AS 'Pleasant Camera Tilt Score CAA',
+  CAA.ZPLEASANTCOMPOSITIONSCORE AS 'Pleasant Composition Score CAA',
+  CAA.ZPLEASANTLIGHTINGSCORE AS 'Pleasant Lighting Score CAA',
+  CAA.ZPLEASANTPATTERNSCORE AS 'Pleasant Pattern Score CAA',
+  CAA.ZPLEASANTPERSPECTIVESCORE AS 'Pleasant Perspective Score CAA',
+  CAA.ZPLEASANTPOSTPROCESSINGSCORE AS 'Pleasant Post Processing Score CAA',
+  CAA.ZPLEASANTREFLECTIONSSCORE AS 'Pleasant Reflection Score CAA',
+  CAA.ZPLEASANTSYMMETRYSCORE AS 'Pleasant Symmetry Score CAA',
+  CAA.ZSHARPLYFOCUSEDSUBJECTSCORE AS 'Sharply Focused Subject Score CAA',
+  CAA.ZTASTEFULLYBLURREDSCORE AS 'Tastfully Blurred Score CAA',
+  CAA.ZWELLCHOSENSUBJECTSCORE AS 'Well Chosen Subject Score CAA',
+  CAA.ZWELLFRAMEDSUBJECTSCORE AS 'Well Framed Subject Score CAA',
+  CAA.ZWELLTIMEDSHOTSCORE AS 'Well Timeed Shot Score CAA',
+  ZALBUMLIST.Z_PK AS 'Album List zPK',
+  ZALBUMLIST.ZIDENTIFIER AS 'Album List ID Key',
+  ZALBUMLIST.ZNEEDSREORDERINGNUMBER AS 'Album List Needs Reordering Number',
+  CASE IR.ZDATASTORECLASSID
+    WHEN 0 THEN '0-Unknown'
+    WHEN 1 THEN '1-Unknown'
+    WHEN 2 THEN '2-Unknown'
+    ELSE IR.ZDATASTORECLASSID
+  END AS 'Data Store Class ID Internal Resource',
+  CASE ZASSET.ZCLOUDPLACEHOLDERKIND
+    WHEN 0 THEN '0-Unknown'
+    WHEN 1 THEN '1-Unknown'
+    WHEN 2 THEN '2-Unknown'
+    WHEN 3 THEN '3-Unknown'
+    WHEN 4 THEN '4-Unknown'
+    WHEN 5 THEN '5-Unknown'
+    WHEN 6 THEN '6-Unknown'
+    WHEN 7 THEN '7-Unknown'
+    WHEN 8 THEN '8-Unknown'
+    ELSE ZASSET.ZCLOUDPLACEHOLDERKIND
+  END AS 'Cloud Place Holder Kind Asset',
+  IR.ZUTICONFORMANCEHINT AS 'UTI Conformance Hint IR',
+  IR.ZCOMPACTUTI AS 'Compact UTI IR',
+  IR.ZLOCALAVAILABILITYTARGET AS 'Local Avilability Target Internal Resource',
+  IR.ZQUALITYSORTVALUE AS 'Quality Sort Value Key Internal Resource',
+  IR.ZFILESYSTEMBOOKMARK AS 'File System Bookmark Key Internal Resource', 
+  IR.ZFILESYSTEMVOLUME AS 'File System Volume Key Internal Resource',
+  IR.ZTRANSIENTCLOUDMASTER AS 'Transient Cloud Master Key Internal Resource',
+  IR.ZCLOUDDELETEASSETUUIDWITHRESOURCETYPE AS 'Cloud Delete Asset UUID With Resource Type Internal Resource',
+  IR.ZFINGERPRINT AS 'Internal Resource Fingerprint Internal Resource',
+  AstAnalysisSt.Z_PK AS 'Asset Analysis State zPK',
+  AstAnalysisSt.ZANALYSISSTATE AS 'Analyisis State AstAnalysisSt',
+  AstAnalysisSt.ZWORKERFLAGS AS 'Worker Flags AstAnalysisSt',
+  AstAnalysisSt.ZWORKERTYPE AS 'Worker Type AstAnalysisSt',
+  AstAnalysisSt.ZASSET AS 'Asset AstAnalysisSt',
+  AstAnalysisSt.ZIGNOREUNTILDATE AS 'Ignore Until Date AstAnalysisSt',
+  AstAnalysisSt.ZLASTIGNOREDDATE AS 'Last Ignored Date AstAnalysisSt',
+  AstAnalysisSt.ZSORTTOKEN AS 'Sort Token AstAnalysisSt',
+  AstAnalysisSt.ZASSETUUID AS 'Asset UUID AstAnalysisSt',
+  CLDRes.Z_PK AS 'Cloud Resource zPK',
+  CLDRes.ZCLOUDLOCALSTATE AS 'Cloud Local State CLDRes',
+  CLDRes.ZISAVAILABLE AS 'Is Available CLDRes',
+  CLDRes.ZISLOCALLYAVAILABLE AS 'Is Locally Available CLDRes',
+  CLDRes.ZPREFETCHCOUNT AS 'Prefetch Count CLDRes',
+  CLDRes.ZSOURCETYPE AS 'Source Type CLDRes',
+  CLDRes.ZTYPE AS 'Type CLDRes',
+  CLDRes.ZASSET AS 'Asset Key CLDRes',
+  CLDRes.ZCLOUDMASTER AS 'Cloud Master Key CLDRes',
+  CLDRes.ZPRUNEDAT AS 'Purnedat CLDRes',
+  CLDRes.ZASSETUUID AS 'Asset UUID CLDRes',
+  CLDRes.ZFINGERPRINT AS 'Fingerprint CLDRes',
+  CLDRes.ZITEMIDENTIFIER AS 'Item Identifier CLDRes',
+  UFB.Z_PK AS 'User Feedback zPK',
+  UFB.ZFEATURE AS 'User Feedback Feature UFB',
+  UFB.ZTYPE AS 'User Feedback Type UAB',
+  CASE UFB.ZTYPE
+    WHEN 0 THEN '0-Unknown'
+    WHEN 1 THEN '1-Unknown'
+    WHEN 2 THEN '2-Unknown'
+    WHEN 3 THEN '3-Unknown'
+    WHEN 4 THEN '4-Unknown'
+    WHEN 5 THEN '5-Unknown'
+    WHEN 6 THEN '6-Unknown'
+    WHEN 7 THEN '7-Unknown'
+    WHEN 8 THEN '8-Unknown'
+    ELSE UFB.ZTYPE
+  END AS 'User Feedback Type UFB',
+  UFB.ZMEMORY AS 'Memory Key UAB',
+  UFB.ZPERSON AS 'Person Key UAB',
+  DateTime(UFB.ZLASTMODIFIEDDATE + 978307200, 'UNIXEPOCH') AS 'Last Modified Date UFB',
+  UFB.ZCONTEXT AS 'Context UFB',
+  CASE UFB.ZCLOUDLOCALSTATE
+    WHEN 0 THEN 'Not Currently Synced with iCloud' 
+    WHEN 1 THEN 'Synced with iCloud'
+    ELSE UFB.ZCLOUDLOCALSTATE
+  END AS 'Cloud Local State UFB',
+  Case UFB.ZCLOUDDELETESTATE
+    WHEN 0 THEN '0-Not Deleted'
+    WHEN 1 THEN '1-Deleted'
+    ELSE UFB.ZCLOUDDELETESTATE
+  END AS 'Cloud Delete State UFB',
+  UFB.ZUUID AS 'User Feedback UUID',
+  ZASSET.ZEXTENDEDATTRIBUTES AS 'Extended Attributes Asset Key',
+  ZASSET.ZCOMPUTEDATTRIBUTES AS 'Computed Attributes Asset Key',
+  ZASSET.ZCLOUDFEEDASSETSENTRY AS 'Cloud Feed Assets Entry Asset Key',
+  ZASSET.ZADDITIONALATTRIBUTES AS 'AddAtt Key Asset',
+  ZASSET.ZMEDIAANALYSISATTRIBUTES AS 'Media Analysis Attributes Key Asset',
+  ZASSET.ZMASTER AS 'Master Key Asset',
+  ZASSET.ZMOMENT AS 'Moment Key from Asset',
+  ZASSET.ZMOMENTSHARE AS 'Moment Share Key Asset',
+  ZASSET.ZHIGHLIGHTBEINGASSETS AS 'Highlight Being Assets Key',
+  ZASSET.ZHIGHLIGHTBEINGEXTENDEDASSETS AS 'Highlight Being Extended Assets Key',
+  ZASSET.ZHIGHLIGHTBEINGKEYASSET AS 'Highlight Being Key Asset',
+  ZASSET.ZHIGHLIGHTBEINGSUMMARYASSETS AS 'Highlight Being Summary Asset Key',
+  ZASSET.ZDAYGROUPHIGHLIGHTBEINGASSETS 'Day Group Highlight Being Assets Key',
+  ZASSET.ZDAYGROUPHIGHLIGHTBEINGEXTENDEDASSETS 'Day Group Highlight Being Extended Assets Key',
+  ZASSET.ZDAYGROUPHIGHLIGHTBEINGKEYASSET 'Day Group Highlight Being Key Asset',
+  ZASSET.ZDAYGROUPHIGHLIGHTBEINGSUMMARYASSETS 'Day Group Highlight Being Summary Assets Key',
+  ZASSET.ZMONTHHIGHLIGHTBEINGFIRSTASSET AS 'Month Highlight Being First Asset Key',
+  ZASSET.ZMONTHHIGHLIGHTBEINGKEYASSET AS 'Month Highlight Being Key Asset',
+  ZASSET.ZYEARHIGHLIGHTBEINGKEYASSET AS 'Year Highlight Being Key Asset',
+  ZASSET.Z_FOK_CLOUDFEEDASSETSENTRY AS 'FOK Cloud Feed Assets Entry Key Asset',
+  ZASSET.ZHIGHLIGHTVISIBILITYSCORE AS 'Highlight Visibility Score Asset',
+  ZASSET.ZOVERALLAESTHETICSCORE AS 'Overall Aesthetic Score Asset',
+  ZASSET.ZSORTTOKEN AS 'Sort Token Asset',
+  ZASSET.ZUUID AS 'Asset UUID',
+  ZASSET.ZCLOUDASSETGUID AS 'Cloud Asset GUID Asset',
+  ZASSET.ZAVALANCHEUUID AS 'Avalanche UUID Asset',
+  ZASSET.ZAVALANCHEPICKTYPE AS 'Avalanche Pick Type Asset',
+  ZASSET.ZMEDIAGROUPUUID AS 'Media Group UUID Asset',
+  ZASSET.ZCLOUDCOLLECTIONGUID AS 'Cloud Collection on GUID Asset',  
+  ZASSET.ZCLOUDBATCHID AS 'Cloud Batch ID Asset',
+  ZASSET.ZCLOUDOWNERHASHEDPERSONID AS 'Cloud Owner Hashed Person ID',
+  ZAddAssetAttr.ZASSET AS 'Zasset Key AddAssetAttr',
+  ZAddAssetAttr.ZSCENEANALYSISVERSION AS 'Scene Analysis Version AddAssetAttr',
+  ZAddAssetAttr.ZFACEANALYSISVERSION AS 'Face Analysis Version ZAddAssetAttr',
+  ZAddAssetAttr.ZMEDIAMETADATA AS 'Media Metadata Key AddAssetAttr',
+  ZAddAssetAttr.ZSCENEPRINT AS 'Screne Print Key AddAssetAttr',
+  ZAddAssetAttr.ZUNMANAGEDADJUSTMENT AS 'Unmanaged Adjustment Key AddAssetAttr',
+  ZAddAssetAttr.ZASSETDESCRIPTION AS 'Asset Description Key AddAssetAttr',
+  ZAddAssetAttr.ZPUBLICGLOBALUUID AS 'Public Global UUID AddAssetAttr',
+  ZAddAssetAttr.ZORIGINALASSETSUUID AS 'Org Assets UUID AddAssetAttr',
+  ZAddAssetAttr.ZORIGINATINGASSETIDENTIFIER AS 'Org Asset Identifier AddAssetAttr',
+  ZAddAssetAttr.ZDEFERREDPHOTOIDENTIFIER AS 'Deferred Photo Identifier AddAssetAttr',
+  ZAddAssetAttr.ZIMPORTSESSIONID AS 'Import Session ID AddAssetAttr',
+  ZAddAssetAttr.ZSNOWDAYSNOWPLOWIDENTIFIER AS 'Snow Day Snow Plow ID AddAssetAttr',
+  ZAddAssetAttr.ZSPATIALOVERCAPTUREGROUPIDENTIFIER AS 'Spatial Over Capture Group ID AddAssetAttr',
+  ZAddAssetAttr.ZPHOTOSTREAMTAGID AS 'Photo Stream Tag ID AddAssetAttr',
+  ZAddAssetAttr.ZMASTERFINGERPRINT AS 'Master Fingerprint AddAssetAttr',
+  ZAddAssetAttr.ZADJUSTEDFINGERPRINT AS 'Adjusted Fingerprint AddAssetAttr',
+  ZAddAssetAttr.ZOBJECTSALIENCYRECTSDATA AS 'HEX NSKeyed Plist Obect Saliencyrects Data AddAssetAttr',
+  ZAddAssetAttr.ZORIGINALHASH AS 'HEX Orginal Hash AddAssetAttr',
+  ZAddAssetAttr.ZMONTAGE AS 'Montage AddAssetAttr',
+  ZAddAssetAttr.ZSHAREORIGINATOR AS 'Share Originator AddAssetAttr',
+  ZAddAssetAttr.ZPLACEANNOTATIONDATA AS 'Place Annotation Data AddAssetAttr',
+  ZAddAssetAttr.ZCLOUDAVALANCHEPICKTYPE AS 'Cloud Avalanche Pick Type AddAssetAttr',
+  ZAddAssetAttr.ZCLOUDRECOVERYSTATE AS 'Cloud Recovery State AddAssetAttr',
+  ZAddAssetAttr.ZORIGINALRESOURCECHOICE AS 'Org Resource Choice AddAssetAttr',
+  ZAddAssetAttr.ZSYNDICATIONIDENTIFIER AS 'Syndication Identifier ZAddAssetAttr',
+  ZAddAssetAttr.ZSOURCEASSETFORDUPLICATIONSCOPEIDENTIFIER AS 'Source Asset For Duplication Scope ID ZAddAssetAttr',
+  GenAlbum.Z_PK AS 'GenAlbum zPK',
+  GenAlbum.ZKEYASSET AS 'Key Asset GenAlbum',
+  GenAlbum.ZTERTIARYKEYASSET AS 'Tertiary Key Asset GenAlbum',
+  GenAlbum.ZSECONDARYKEYASSET AS 'Secondary Key Asset GenAlbum',
+  GenAlbum.ZCUSTOMKEYASSET AS 'Custom Key Asset GenAlbum',
+  GenAlbum.ZSYNCEVENTORDERKEY AS 'Sync Event Order Key GenAlbum',
+  GenAlbum.Z_FOK_PARENTFOLDER AS 'FOK Parent Folder GenAlbum',
+  GenAlbum.ZCLOUDGUID AS 'Cloud GUID GenAlbum',
+  GenAlbum.ZUUID AS 'GenAlbum UUID',
+  GenAlbum.ZPROJECTRENDERUUID AS 'Project Render UUID GenAlbum',
+  GenAlbum.ZKEYASSETFACEIDENTIFIER AS 'Key Asset Face ID GenAlbum',
+  ZALBUMLIST.ZUUID AS 'Album List UUID',   
+  CM.Z_PK AS 'Cloud Master zPK',
+  CM.ZMEDIAMETADATA AS 'Media Metadata Cloud Master',
+  CM.ZIMPORTSESSIONID AS 'Import Session ID Cloud Master',
+  CM.ZORIGINATINGASSETIDENTIFIER AS 'Orginating Asset ID Cloud Master',
+  CM.ZCLOUDMASTERGUID AS 'Cloud Master GUID Cloud Master',
+  CM.ZPLACEHOLDERSTATE AS 'Place Holder State Cloud Master',
+  CM.ZSOURCEMASTERFORDUPLICATIONIDENTIFIER AS 'Source Master For Duplication ID Key',
+  CM.ZSOURCEMASTERFORDUPLICATIONSCOPEIDENTIFIER AS 'Source Master For Duplication Scope ID Key',
+  CFE.Z_PK AS 'Cloud Feed Entry zPK',
+  CFE.ZENTRYPRIORITYNUMBER AS 'Entry Priority Number CFE', 
+  CFE.ZENTRYALBUMGUID AS 'Entry Album GUID CFE',
+  CFE.ZENTRYINVITATIONRECORDGUID AS 'Entry Invitation Record GUID CFE',
+  CFE.ZENTRYCLOUDASSETGUID AS 'Entry Cloud Asset GUID',
+  CSC.Z_PK AS 'Cloud Shared Comment zPK',
+  CSC.ZCLOUDFEEDCOMMENTENTRY AS 'Cloud Feed Comment Entry Key Cloud Shared Comment',
+  CSC.ZCLOUDFEEDLIKECOMMENTENTRY AS 'Cloud Feed Like Comment Entry Key Cloud Shared Comment',
+  CSC.ZCOMMENTEDASSET AS 'Commented Asset Key Cloud Shared Comment',
+  CSC.ZLIKEDASSET AS 'Liked Asset Key Cloud Shared Comment',
+  CSC.Z_FOK_CLOUDFEEDCOMMENTENTRY AS 'FOK Cloud Feed Comment Entry Key Cloud Shared Comment',
+  CSC.Z_FOK_CLOUDFEEDLIKECOMMENTENTRY AS 'FOK Cloud Feed Like Comment Entry Key Cloud Shared Comment',
+  CSC.ZCLOUDGUID AS 'Cloud GUID Cloud Shared Comment',
+  CSAIR.Z_PK AS 'Cloud Shared Album Invite zPK',
+  CSAIR.ZALBUM AS 'Album Key Cloud Share Album Invite Rec',
+  CSAIR.Z_FOK_ALBUM AS 'FOK Album Key Cloud Share Album Invite Rec',
+  CSAIR.ZALBUMGUID AS 'Album GUID Cloud Share Album Invite Rec',
+  CSAIR.ZCLOUDGUID AS 'Cloud GUID Cloud Share Album Invite Rec',
+  SHA.Z_PK AS 'Share zPK',
+  SHA.ZUUID AS 'Share Album Share UUID SHA',
+  SHAPart.Z_PK AS 'Share Participant zPK',
+  SHAPart.ZROLE AS 'Role SHAPart',
+  SHAPart.ZSHARE AS 'Share SHAPart',
+  SHAPart.ZUSERIDENTIFIER AS 'User Identifier SHAPart', 
+  SHAPart.ZUUID AS 'Share Participant UUID SHAPart',
+  SHAPart.ZNAMECOMPONENTS AS 'Name Components SHAPart',
+  SHAPart.Z51_SHARE AS '51 Share SHAPart',
+  SHAPart.ZPERMISSION AS 'Premission SHAPart',
+  SHAPart.ZISCURRENTUSER AS 'Is Current User SHAPart',
+  CMMD.ZADDITIONALASSETATTRIBUTES AS 'AddAssetAtt Key Cloud Master MetaData',
+  CMMD.Z_PK AS 'Cloud Master Media MetaData zPK',
+  AssetDes.Z_PK AS 'Asset Description zPK',
+  AssetDes.ZASSETATTRIBUTES AS 'Asset Attributes Asset Description Key',
+  Z_27ASSETS.Z_27ALBUMS AS '27Asset.27Album Key = GenAlbum zPK',
+  Z_27ASSETS.Z_3ASSETS AS '27Asset.3Assets Key = Asset zPK',
+  Z_27ASSETS.Z_FOK_3ASSETS AS '27Asset.3Assets = unknown',  
+  CAA.Z_PK AS 'Computed Asset Attributes zPK',
+  IR.Z_PK AS 'Internal Resource zPK',
+  IR.ZASSET AS 'Asset Key Internal Resource',
+  MedAnalyAsset.ZASSET AS 'Asset Key MedAnalyAsset',
+  MedAnalyAsset.Z_PK AS 'Media Analysis Asst Attributes zPK',
+  MedAnalyAsset.ZMEDIAANALYSISVERSION AS 'Media Analysis Version MedAnalyAsset',
+  UA.Z_PK AS 'Unmanaged Adjustment zPK',
+  UA.ZASSETATTRIBUTES AS 'Asset Attributes Key UA',  
+  UA.ZUUID AS 'Unmanaged Adjustment UUID UA',
+  UA.ZOTHERADJUSTMENTSFINGERPRINT AS 'Other Adjustments Fingerprint UA',
+  UA.ZSIMILARTOORIGINALADJUSTMENTSFINGERPRINT AS 'Similar Org Adjustments Fingerprint UA',
+  DF.Z_PK AS 'Detected Face zPK',
+  DF.ZASSET AS 'Asset Key Detected Face',
+  DF.ZGROUPINGIDENTIFIER AS 'Grouping ID Detected Face',
+  DF.ZMASTERIDENTIFIER AS 'Master ID Detected Face',
+  DF.ZFACEALGORITHMVERSION AS 'Face Algorithm Version Detected Face',
+  DFP.ZFACEPRINTVERSION AS 'Face Print Version DFP',
+  FC.ZASSET AS 'Asset Key FC',
+  SceneP.Z_PK AS 'Scene Print zPK',
+  SceneP.ZADDITIONALASSETATTRIBUTES AS 'AddAssetAttr Key SceneP',
+  MEM.Z_PK AS 'Memory zPK',
+  MEM.ZKEYASSET AS 'Key Asset Key Memory',
+  MEM.ZPHOTOSGRAPHVERSION AS 'Memory Photos Graph Version Memory',
+  MemoryBECA.Z_3EXTENDEDCURATEDASSETS AS '3MemoryBECA Asset Key',
+  MemoryBECA.Z_42MEMORIESBEINGEXTENDEDCURATEDASSETS AS '3MemoryBECA Memory Key',
+  MOM.Z_PK AS 'Moment zPK',
+  MOM.ZHIGHLIGHT AS 'Moment Highlight Key',
+  MOM.ZUUID AS 'Moment UUID Moment',
+  SUGG.Z_PK AS 'Suggestion zPK',
+  SUGG.ZUUID AS 'Suggestion UUID SUGG',
+  SUGG.ZVERSION AS 'Suggestion Version SUGG',
+  PH.Z_PK AS 'Photos Highlight zPK',
+  PH.ZPARENTPHOTOSHIGHLIGHT AS 'Parent Photos Highlight Key PH',
+  PH.ZKEYASSET AS 'Key Asset Key PH',
+  PH.ZDAYGROUPKEYASSET AS 'Day Group Key Asset Key PH',
+  PH.ZPARENTDAYGROUPPHOTOSHIGHLIGHT AS 'Parent Day Group Photos Highlight Key Photo',
+  PH.ZMONTHFIRSTASSET AS 'Month First Asset Key PH',
+  PH.ZMONTHKEYASSET AS 'Month Key Asset Key PH',
+  PH.ZYEARKEYASSET AS 'Year Key Asset Key PH',
+  PH.ZUUID AS 'Photos Highlight UUID PH',
+  PH.ZENRICHMENTVERSION AS 'Enrichment Version PH',
+  PH.ZHIGHLIGHTVERSION AS 'Highlight Version PH',  
+  PERREF.Z_PK AS 'Person Reference zPK',
+  PERREF.ZASSETATTRIBUTES AS 'Asset Attributes Key PERREF',
+  PERREF.ZPERSON AS 'Person Key PERREF',
+  PERREF.ZPERSONUUID AS 'Person UUID PERREF',
+  HEX(PERREF.ZPERSONDATA) AS 'Person Data PERREF',
+  CRA.Z_PK AS 'Charter Recognitation Attributes CRA',
+  CRA.ZMEDIAANALYSISASSETATTRIBUTES AS 'CRA Media Analysis Asset Attr Key',
+  CRA.ZALGORITHMVERSION AS 'CRA Algorithm Version CRA',
+  CRA.ZADJUSTMENTVERSION AS 'CRA Adjustment Version CRA',
+  ExtAttr.ZASSET AS 'Asset Key ExtAttr',
+  VSA.Z_PK AS 'Visual Search Attributes zPK VSA',
+  VSA.ZALGORITHMVERSION AS 'Algorithm Version VSA',
+  VSA.ZMEDIAANALYSISASSETATTRIBUTES AS 'Media Analysis Asset Attr VSA',
+  VSA.ZADJUSTMENTVERSION AS 'Adjustment Version VSA',
+  VSA.ZVISUALSEARCHDATA AS 'HEX Visual Search Data VSA',
+  SceneClass.Z_PK AS 'Scene Classification zPK',
+  SceneClass.ZSCENEIDENTIFIER AS 'Scene Classification Identifier SceneClass',
+  SceneClass.ZPACKEDBOUNDINGBOXRECT AS 'Packed Bounding Box Rect SceneClass',
+  SceneClass.ZASSETATTRIBUTES AS 'Asset Attributes Key SceneClass',
+  SceneClass.ZCONFIDENCE AS 'Scene Classification Confidence SceneClass'
+FROM ZASSET
+  LEFT JOIN ZADDITIONALASSETATTRIBUTES ZAddAssetAttr ON ZASSET.ZADDITIONALATTRIBUTES = ZAddAssetAttr.Z_PK 
+  LEFT JOIN ZASSETDESCRIPTION AssetDes ON AssetDes.ZASSETATTRIBUTES = ZAddAssetAttr.Z_PK
+  LEFT JOIN ZUNMANAGEDADJUSTMENT UA ON UA.Z_PK = ZAddAssetAttr.ZUNMANAGEDADJUSTMENT
+  LEFT JOIN ZEXTENDEDATTRIBUTES ExtAttr ON ExtAttr.ZASSET = ZASSET.Z_PK
+  LEFT JOIN Z_27ASSETS ON ZASSET.Z_PK = Z_27ASSETS.Z_3ASSETS
+  LEFT JOIN ZGENERICALBUM GenAlbum ON GenAlbum.Z_PK = Z_27ASSETS.Z_27ALBUMS
+  LEFT JOIN Z_26ALBUMLISTS ON GenAlbum.Z_PK = Z_26ALBUMLISTS.Z_26ALBUMS
+  LEFT JOIN ZALBUMLIST ON ZALBUMLIST.Z_PK = Z_26ALBUMLISTS.Z_26ALBUMS
+  LEFT JOIN ZSHARE SHA ON SHA.Z_PK = ZASSET.ZMOMENTSHARE
+  LEFT JOIN ZSHAREPARTICIPANT SHAPart ON SHAPart.ZSHARE = SHA.Z_PK
+  LEFT JOIN ZCLOUDMASTER CM ON CM.Z_PK = ZASSET.ZMASTER
+  LEFT JOIN ZCLOUDMASTERMEDIAMETADATA CMMD ON CMMD.ZADDITIONALASSETATTRIBUTES = ZAddAssetAttr.ZMEDIAMETADATA AND CMMD.ZCLOUDMASTER = CM.Z_PK
+  LEFT JOIN ZCLOUDFEEDENTRY CFE ON CFE.Z_PK = ZASSET.Z_PK
+  LEFT JOIN ZCLOUDSHAREDALBUMINVITATIONRECORD CSAIR ON CSAIR.ZALBUM = GenAlbum.Z_PK
+  LEFT JOIN ZCLOUDSHAREDCOMMENT CSC ON CSC.ZCOMMENTEDASSET = ZASSET.Z_PK
+  LEFT JOIN ZCLOUDRESOURCE CLDRes ON CLDRes.ZCLOUDMASTER = CM.Z_PK
+  LEFT JOIN ZDETECTEDFACE DF ON ZASSET.Z_PK = DF.ZASSET
+  LEFT JOIN ZPERSON PER ON PER.Z_PK = DF.ZPERSON
+  LEFT JOIN ZDETECTEDFACEPRINT DFP ON DFP.ZFACE = DF.Z_PK
+  LEFT JOIN ZFACECROP FC ON PER.Z_PK = FC.ZPERSON
+  LEFT JOIN ZUSERFEEDBACK UFB ON UFB.ZPERSON = PER.Z_PK
+  LEFT JOIN ZPERSONREFERENCE PERREF ON PERREF.ZASSETATTRIBUTES = ZAddAssetAttr.Z_PK
+  LEFT JOIN Z_3MEMORIESBEINGEXTENDEDCURATEDASSETS MemoryBECA ON MemoryBECA.Z_3EXTENDEDCURATEDASSETS = ZASSET.Z_PK
+  LEFT JOIN ZMEMORY MEM ON MemoryBECA.Z_42MEMORIESBEINGEXTENDEDCURATEDASSETS = MEM.Z_PK
+  LEFT JOIN ZPHOTOSHIGHLIGHT PH ON PH.Z_PK = ZASSET.ZHIGHLIGHTBEINGASSETS
+  LEFT JOIN ZSUGGESTION SUGG ON SUGG.Z_PK = ZASSET.ZHIGHLIGHTBEINGASSETS
+  LEFT JOIN ZMOMENT MOM ON MOM.ZHIGHLIGHT = PH.Z_PK
+  LEFT JOIN ZSCENEPRINT SceneP ON SceneP.Z_PK = ZAddAssetAttr.ZSCENEPRINT
+  LEFT JOIN ZCOMPUTEDASSETATTRIBUTES CAA ON CAA.Z_PK = ZASSET.Z_PK
+  LEFT JOIN ZINTERNALRESOURCE IR ON IR.ZASSET = ZASSET.Z_PK
+  LEFT JOIN ZASSETANALYSISSTATE AstAnalysisSt ON AstAnalysisSt.ZASSET = ZASSET.Z_PK
+  LEFT JOIN ZMEDIAANALYSISASSETATTRIBUTES MedAnalyAsset ON MedAnalyAsset.ZASSET = ZASSET.ZMEDIAANALYSISATTRIBUTES
+  LEFT JOIN ZVISUALSEARCHATTRIBUTES VSA ON VSA.Z_PK = MedAnalyAsset.ZVISUALSEARCHATTRIBUTES
+  LEFT JOIN ZCHARACTERRECOGNITIONATTRIBUTES CRA ON CRA.Z_PK = MedAnalyAsset.ZCHARACTERRECOGNITIONATTRIBUTES
+  LEFT JOIN ZSCENECLASSIFICATION SceneClass ON SceneClass.ZASSETATTRIBUTES = ZASSET.ZADDITIONALATTRIBUTES
+ORDER BY ZASSET.ZDATECREATED
