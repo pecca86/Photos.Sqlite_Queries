@@ -61,6 +61,10 @@ SELECT
     WHEN 6 THEN 'Cloud Photo Library Asset'
     WHEN 7 THEN '7-Unknown'
     WHEN 8 THEN 'Cloud Master Moment Asset'
+	WHEN 9 THEN '9-Unknown'
+	WHEN 10 THEN '10-Unknown'
+	WHEN 11 THEN '11-Unknown'
+	WHEN 12 THEN '12-Unknown'
     ELSE ZASSET.ZSAVEDASSETTYPE
   END AS 'Saved Asset Type',
   ZASSET.ZDIRECTORY AS 'Directory Asset',
@@ -306,6 +310,9 @@ SELECT
     WHEN 7 THEN '7-Unknown'
     WHEN 8 THEN 'Native App - SpringBoard, MessageCamera, Sharingd, Other'
     WHEN 9 THEN 'Native App - MobileSMS, Safari, Other'
+	WHEN 10 THEN '10-Unknown'
+	WHEN 11 THEN '11-Unknown'
+	WHEN 12 THEN '12-Unknown'
     ELSE ZAddAssetAttr.ZIMPORTEDBY
   END AS 'Imported By AddAssetAttr',
   CASE CM.ZIMPORTEDBY
@@ -319,6 +326,9 @@ SELECT
     WHEN 7 THEN '7-Unknown'
     WHEN 8 THEN 'Native App - SpringBoard, MessageCamera, Sharingd, Other'
     WHEN 9 THEN 'Native App - MobileSMS, Safari, Other'
+	WHEN 10 THEN '10-Unknown'
+	WHEN 11 THEN '11-Unknown'
+	WHEN 12 THEN '12-Unknown'
     ELSE CM.ZIMPORTEDBY
   END AS 'Imported by Cloud Master',
   CMMD.ZDATA AS 'HEX Data Cloud Master MetaData',
